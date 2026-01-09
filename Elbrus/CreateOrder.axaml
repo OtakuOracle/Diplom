@@ -26,7 +26,16 @@
                 HorizontalAlignment="Left"
                 PlaceholderText="Нажмите, чтобы выбрать клиента..."/>
 
-      <!-- ДАТА И ВРЕМЯ (Для использования в C# через .Text) -->
+		<!-- ИНВЕНТАРЬ (Только выбор из списка) -->
+		<TextBlock Text="Выберите инвентарь" FontWeight="Bold" FontSize="14"/>
+		<ComboBox ItemsSource="{Binding InventoryList}"
+				  SelectedItem="{Binding ChosenInventory}"
+				  DisplayMemberBinding="{Binding Name}"
+				  Width="450"
+				  HorizontalAlignment="Left"
+				  PlaceholderText="Нажмите, чтобы выбрать инвентарь..."/>
+
+      <!-- ДАТА И ВРЕМЯ -->
       <StackPanel Spacing="10">
         
         <StackPanel>

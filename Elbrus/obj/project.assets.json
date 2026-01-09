@@ -4710,11 +4710,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\Desktop\\Elbrus\\Elbrus\\Elbrus.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
       "projectName": "Elbrus",
-      "projectPath": "C:\\Users\\User\\Desktop\\Elbrus\\Elbrus\\Elbrus.csproj",
+      "projectPath": "C:\\Users\\User\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\User\\Desktop\\Elbrus\\Elbrus\\obj\\",
+      "outputPath": "C:\\Users\\User\\Desktop\\Diplom\\Elbrus\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

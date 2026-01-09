@@ -23,11 +23,21 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
     public ObservableCollection<Client> ClientList { get; } = new();
     public ObservableCollection<Service> ServiceList { get; } = new();
     public ObservableCollection<ServiceWithTime> BasketServices { get; } = new();
+    public ObservableCollection<Inventory> InventoryList { get; } = new(); //cписок инвент
+
 
     public class ServiceWithTime : Service
     {
         public int TimeInMinutes { get; set; } = 30;
         public string CurrentStatus { get; set; } = "Новая услуга";
+    }
+
+    private Inventory _chosenInventory; //инв
+    public Inventory ChosenInventory
+    {
+        get => _chosenInventory;
+        set => this.RaiseAndSetIfChanged(ref _chosenInventory, value);
+
     }
 
     private Client _chosenClient;
@@ -54,6 +64,7 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
     public event PropertyChangedEventHandler PropertyChanged;
     public event PropertyChangingEventHandler PropertyChanging;
 
+
     void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args) => PropertyChanged?.Invoke(this, args);
     void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args) => PropertyChanging?.Invoke(this, args);
 
@@ -71,15 +82,19 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
         {
             await _context.Clients.LoadAsync();
             await _context.Services.LoadAsync();
+            await _context.Inventories.LoadAsync();
 
             ClientList.Clear();
             ServiceList.Clear();
+            InventoryList.Clear();
 
             foreach (var cl in _context.Clients.Local.ToList())
                 ClientList.Add(cl);
 
             foreach (var svc in _context.Services.Local.ToList())
                 ServiceList.Add(svc);
+            foreach (var inv in _context.Inventories.Local.ToList())
+                InventoryList.Add(inv);
         }
         catch (Exception ex)
         {
