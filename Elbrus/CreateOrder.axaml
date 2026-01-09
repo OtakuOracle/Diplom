@@ -1,0 +1,128 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Elbrus.CreateOrder"
+        x:CompileBindings="False"
+        Title="Оформление заказа"
+        Width="700"
+        Height="850">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="20" Spacing="15">
+
+      <!-- Номер заказа -->
+      <TextBlock Text="Номер заказа" FontWeight="Bold" FontSize="18"/>
+      <TextBox x:Name="OrderNumberField" 
+               IsReadOnly="True" 
+               Watermark="Будет сгенерирован автоматически" 
+               FontSize="14"
+               Padding="5"/>
+
+      <!-- КЛИЕНТ (Только выбор из списка) -->
+      <TextBlock Text="Выберите клиента" FontWeight="Bold" FontSize="16"/>
+      <ComboBox ItemsSource="{Binding ClientList}"
+                SelectedItem="{Binding ChosenClient}"
+                DisplayMemberBinding="{Binding Fio}"
+                Width="450"
+                HorizontalAlignment="Left"
+                PlaceholderText="Нажмите, чтобы выбрать клиента..."/>
+
+      <!-- ДАТА И ВРЕМЯ (Для использования в C# через .Text) -->
+      <StackPanel Spacing="10">
+        
+        <StackPanel>
+          <TextBlock Text="Дата заказа" FontWeight="Bold" FontSize="16"/>
+          <TextBox x:Name="DateBox" 
+                   Width="300" 
+                   HorizontalAlignment="Left"
+                   Watermark="Формат: ДД.ММ.ГГГГ" 
+                   FontSize="14"/>
+        </StackPanel>
+
+        <StackPanel>
+          <TextBlock Text="Время начала" FontWeight="Bold" FontSize="16"/>
+          <TextBox x:Name="TimeInBox" 
+                   Width="300" 
+                   HorizontalAlignment="Left"
+                   Watermark="Формат: ЧЧ:ММ:СС" 
+                   FontSize="14"/>
+        </StackPanel>
+
+        <StackPanel>
+          <TextBlock Text="Время окончания" FontWeight="Bold" FontSize="16"/>
+          <TextBox x:Name="TimeOutBox" 
+                   Width="300" 
+                   HorizontalAlignment="Left"
+                   Watermark="Формат: ЧЧ:ММ:СС" 
+                   FontSize="14"/>
+        </StackPanel>
+        
+      </StackPanel>
+
+      <!-- УСЛУГИ -->
+      <TextBlock Text="Добавить услугу в заказ" FontWeight="Bold" FontSize="16" Margin="0,10,0,0"/>
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <ComboBox ItemsSource="{Binding ServiceList}"
+                  SelectedItem="{Binding ChosenService}"
+                  DisplayMemberBinding="{Binding ServiceName}"
+                  Width="300"/>
+        <TextBox Text="{Binding MinutesSelected}" 
+                 Width="80" 
+                 Watermark="Мин."/>
+        <Button Content="Добавить" 
+                Click="AddServiceClick" 
+                Padding="10,5"
+                Background="#4448C1"
+                Foreground="White"/>
+      </StackPanel>
+
+      <!-- КОРЗИНА (Выбранные услуги) -->
+      <TextBlock Text="Выбранные услуги" FontWeight="Bold" FontSize="16" Margin="0,10,0,0"/>
+      <ListBox ItemsSource="{Binding BasketServices}" Height="150" BorderBrush="LightGray" BorderThickness="1">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="*, 100, 100">
+              <TextBlock Grid.Column="0" Text="{Binding ServiceName}" VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="1" Text="{Binding TimeInMinutes, StringFormat='{}{0} мин'}" VerticalAlignment="Center"/>
+              <Button Grid.Column="2" 
+                      Content="Удалить" 
+                      CommandParameter="{Binding}" 
+                      Click="RemoveServiceClick"
+                      Foreground="Red"
+                      HorizontalAlignment="Right"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <!-- КНОПКИ ДЕЙСТВИЙ -->
+      <StackPanel Spacing="10" Margin="0,20,0,0">
+        <Button Content="Оформить заказ"
+                Click="CompleteOrderClick"
+                Background="#4CAF50"
+                Foreground="White"
+                FontSize="16"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Padding="12"/>
+
+        <Button Content="Отмена / Назад"
+                Click="OnLogoutClick"
+                Background="#F99D97"
+                Foreground="Black"
+                FontSize="16"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Padding="12"/>
+      </StackPanel>
+
+      <!-- ТЕКСТ СТАТУСА / ОШИБОК -->
+      <TextBlock x:Name="InfoText" 
+                 Foreground="Red" 
+                 FontSize="14"
+                 TextWrapping="Wrap"
+                 HorizontalAlignment="Center"
+                 Margin="0,10,0,0"/>
+                 
+    </StackPanel>
+  </ScrollViewer>
+</Window>

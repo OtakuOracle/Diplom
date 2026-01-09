@@ -1,0 +1,72 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="Elbrus.EmployeeWindow"
+        Title="Сотрудник"
+        xmlns:vm="using:Elbrus.Models">
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+		<StackPanel Margin="10">
+
+			<!-- Блок профиля сотрудника -->
+			<Border CornerRadius="15" Background="#4448C1" Padding="15" Width="600" HorizontalAlignment="Left">
+				<StackPanel>
+					<StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
+						<TextBlock Text="Ваше имя:" Foreground="White" FontWeight="Bold"/>
+						<TextBlock Name="EmployeeFio" Foreground="White"/>
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
+						<TextBlock Text="Ваша должность:" Foreground="White" FontWeight="Bold"/>
+						<TextBlock Name="RoleName" Foreground="White"/>
+					</StackPanel>
+				</StackPanel>
+			</Border>
+
+			<TextBlock Text="Список доступных услуг" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>
+
+			<!-- Список услуг -->
+			<Border Background="#F5F5F5" BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Padding="10" MaxWidth="750" MaxHeight="500">
+				<ListBox Name="ListServices" Background="Transparent">
+					<ListBox.ItemTemplate>
+						<!-- Указываем тип данных vm:Service -->
+						<DataTemplate x:DataType="vm:Service">
+							<Grid Margin="5" ColumnDefinitions="50, *, 150, 120">
+
+								<!-- ID Услуги -->
+								<StackPanel Grid.Column="0">
+									<TextBlock Text="ID" FontSize="10" Foreground="Gray"/>
+									<TextBlock Text="{Binding ServiceId}" FontWeight="Bold"/>
+								</StackPanel>
+
+								<!-- Название услуги -->
+								<StackPanel Grid.Column="1" Margin="10,0">
+									<TextBlock Text="Наименование" FontSize="10" Foreground="Gray"/>
+									<TextBlock Text="{Binding ServiceName}" TextWrapping="Wrap"/>
+								</StackPanel>
+
+								<!-- Код услуги -->
+								<StackPanel Grid.Column="2">
+									<TextBlock Text="Код услуги" FontSize="10" Foreground="Gray"/>
+									<TextBlock Text="{Binding ServiceCode}"/>
+								</StackPanel>
+
+								<!-- Стоимость -->
+								<StackPanel Grid.Column="3" HorizontalAlignment="Right">
+									<TextBlock Text="Цена / час" FontSize="10" Foreground="Gray" HorizontalAlignment="Right"/>
+									<TextBlock Text="{Binding CostPerHour, StringFormat='{}{0} руб.'}"
+											   FontWeight="Bold"
+											   Foreground="#4448C1"
+											   HorizontalAlignment="Right"/>
+								</StackPanel>
+
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+					<Button Content="Создать заказ" Click="CreateOrderClick" Background="green"/>
+		</StackPanel>
+	</ScrollViewer>
+</Window>
