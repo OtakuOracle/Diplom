@@ -35,8 +35,27 @@
 				  HorizontalAlignment="Left"
 				  PlaceholderText="Нажмите, чтобы выбрать инвентарь..."/>
 
-      <!-- ДАТА И ВРЕМЯ -->
+		<!-- МОДЕЛЬ (Только выбор из списка) -->
+		<TextBlock Text="Выберите модель" FontWeight="Bold" FontSize="14"/>
+		<ComboBox ItemsSource="{Binding InventoryList}"
+				  SelectedItem="{Binding ChosenInventory}"
+				  DisplayMemberBinding="{Binding Model}"
+				  Width="450"
+				  HorizontalAlignment="Left"
+				  PlaceholderText="Нажмите, чтобы выбрать модель..."/>
+
+
+		<!-- ДАТА И ВРЕМЯ -->
       <StackPanel Spacing="10">
+
+		  <StackPanel>
+			  <TextBlock Text="Размер" FontWeight="Bold" FontSize="16"/>
+			  <TextBox x:Name="SizeBox"
+					   Width="300"
+					   HorizontalAlignment="Left"
+					   Watermark="Введите размер"
+					   FontSize="14"/>
+		  </StackPanel>
         
         <StackPanel>
           <TextBlock Text="Дата заказа" FontWeight="Bold" FontSize="16"/>

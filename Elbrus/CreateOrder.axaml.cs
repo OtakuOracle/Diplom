@@ -152,7 +152,7 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
 
         try
         {
-            string generatedOrderNum = $"{new Random().Next(100, 999)}"; //есть
+            string generatedOrderNum = $"{new Random().Next(100, 999)}"; // Генерация номера заказа
             var newOrder = new Models.Order
             {
                 ClientId = ChosenClient.ClientId,
@@ -167,7 +167,8 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
 
             foreach (var svc in BasketServices)
             {
-                _context.OrderServices.Add(new OrderService
+                // Добавление записи в таблицу OrderServices
+                var newOrderService = new OrderService
                 {
                     OrderId = newOrder.OrderId,
                     ServiceId = svc.ServiceId,
@@ -176,10 +177,27 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
                     TimeIn = TimeOnly.Parse(TimeInBox.Text),
                     TimeOut = TimeOnly.Parse(TimeOutBox.Text),
                     Date = DateOnly.Parse(DateBox.Text)
-                });
+                };
+
+                _context.OrderServices.Add(newOrderService);
+                await _context.SaveChangesAsync(); // Сохраняем OrderService, чтобы получить его OrderServiceId
+
+        
+
+                // Добавление записи в таблицу OrderInventory
+                var newOrderInventory = new OrderInventory
+                {
+                    InventoryId = ChosenInventory.Id, //
+                    //InventoryId = inv.InventoryId,
+                    OrderServiceId = newOrderService.OrderServiceId,
+                    Model = ChosenInventory.Model, // Или используйте другое свойство, если оно у вас есть
+                    Size = SizeBox.Text // Предполагается, что у вас есть поле для ввода Size
+                };
+
+                _context.OrderInventories.Add(newOrderInventory);
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Сохраняем все изменения
 
             InfoText.Text = $"Заказ успешно создан. Номер заказа: {generatedOrderNum}";
             BasketServices.Clear();
@@ -193,6 +211,7 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
             InfoText.Text = $"Ошибка при оформлении: {ex.Message}";
         }
     }
+
 
 
 
