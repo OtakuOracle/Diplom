@@ -5,7 +5,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Elbrus.MainWindow"
         x:CompileBindings="True"
-        Title="Авторизация">
+        Title="Авторизация"
+		Icon="Icon/icon.png">
 
 	<DockPanel>
 		<StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,20,0,0">

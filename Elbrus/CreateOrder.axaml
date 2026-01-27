@@ -4,7 +4,8 @@
         x:CompileBindings="False"
         Title="Оформление заказа"
         Width="700"
-        Height="850">
+        Height="850"
+		Icon="Icon/icon.png">
 
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="20" Spacing="15">

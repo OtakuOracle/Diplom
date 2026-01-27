@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Elbrus")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3e7b9c1347f6615a0519877e790dd64ff0abc65b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb47ab57e99000d4b2cb83ec6152ff099e6b9282")]
 [assembly: System.Reflection.AssemblyProductAttribute("Elbrus")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Elbrus")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
