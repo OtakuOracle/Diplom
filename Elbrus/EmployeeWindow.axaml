@@ -1,0 +1,159 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="Elbrus.EmployeeWindow"
+        Title="Окно сотрудника"
+        xmlns:vm="using:Elbrus.Models"
+        Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+		<Border Grid.Row="0" Grid.Column="0" CornerRadius="15" Background="#4448C1" Padding="15" Margin="10,10,10,0">
+			<Grid ColumnDefinitions="*, Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+					<Border Width="80" Height="80" CornerRadius="40" Background="White"
+                            BorderBrush="LightGray" BorderThickness="1" Margin="0,0,20,0">
+						<Border.Clip>
+							<EllipseGeometry Center="40,40" RadiusX="40" RadiusY="40" />
+						</Border.Clip>
+						<Image x:Name="UserImage" Width="80" Height="80" Stretch="UniformToFill"/>
+					</Border>
+					<StackPanel VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Ваше имя: " Foreground="White" FontWeight="Bold"/>
+							<TextBlock x:Name="FullName" Foreground="White"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+							<TextBlock Text="Ваша должность: " Foreground="White" FontWeight="Bold"/>
+							<TextBlock x:Name="RoleName" Foreground="White"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+							<Border Background="#6666FF" CornerRadius="5" Padding="5">
+								<TextBlock x:Name="SessionTimerText" Foreground="White"/>
+							</Border>
+						</StackPanel>
+						<TextBlock x:Name="SessionWarningText" Foreground="Red" FontSize="10" Margin="0,5,0,0"/>
+					</StackPanel>
+				</StackPanel>
+
+				<StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0">
+					<Button Click="CreateOrderClick"
+                            Width="160" Height="40"
+                            CornerRadius="10"
+                            Background="#00FF00" 
+                            Padding="10,0">
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock Text="Создать заказ" VerticalAlignment="Center" FontWeight="SemiBold"/>
+						</StackPanel>
+					</Button>
+				</StackPanel>
+			</Grid>
+		</Border>
+
+		<ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+			<StackPanel Margin="10" Spacing="20">
+				<Grid Margin="0,10,0,0" ColumnSpacing="20">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+
+					<StackPanel Grid.Column="0" Spacing="10">
+						<TextBlock Text="Список клиентов" FontSize="14" FontWeight="Bold" Foreground="#333333"/>
+						<Border Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="15" Height="350">
+							<ListBox x:Name="ListClients" Background="Transparent" DoubleTapped="OnClientDoubleClick">
+								<ListBox.ItemTemplate>
+									<DataTemplate x:DataType="vm:Client">
+										<Grid Margin="5" Height="50" ColumnDefinitions="*,Auto">
+											<StackPanel Grid.Column="0">
+												<TextBlock Text="ФИО клиента" FontSize="10" Foreground="Gray"/>
+												<TextBlock Text="{Binding FullName}" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+											</StackPanel>
+											<Button Grid.Column="1" Content="Удалить"
+                                                    Width="80" Height="30"
+                                                    CornerRadius="8"
+                                                    Background="Red" Foreground="White"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Margin="10,0,0,0"
+                                                    Click="DeleteClientClick"/>
+										</Grid>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</Border>
+						<Button Content="Добавить клиента"
+                                Width="150" Height="40"
+                                CornerRadius="10"
+                                Background="#4448C1" Foreground="White"
+                                HorizontalAlignment="Center"
+                                Click="AddClientClick"/>
+					</StackPanel>
+
+					<StackPanel Grid.Column="1" Spacing="10">
+						<TextBlock Text="Список услуг" FontSize="14" FontWeight="Bold" Foreground="#333333"/>
+						<Border Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="15" Height="350">
+							<ListBox x:Name="ListServices" Background="Transparent" DoubleTapped="OnServiceDoubleClick">
+								<ListBox.ItemTemplate>
+									<DataTemplate x:DataType="vm:Service">
+										<Grid Margin="5" MinHeight="70" ColumnDefinitions="*, Auto">
+
+											<StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+												<TextBlock Text="Наименование" FontSize="10" Foreground="Gray"/>
+												<TextBlock Text="{Binding ServiceName}" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+												<TextBlock Text="{Binding ServiceCode}" FontSize="11" Foreground="#777777"/>
+
+												<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5,0,0">
+													<TextBlock Text="{Binding CostPerHour, StringFormat='{}{0:N0} руб/час'}"
+															   FontWeight="Bold"
+															   FontSize="13"
+															   Foreground="#4448C1"/>
+												</StackPanel>
+											</StackPanel>
+
+											<Button Grid.Column="1" Content="Удалить"
+													Width="80" Height="30"
+													CornerRadius="8"
+													Background="Red" Foreground="White"
+													VerticalAlignment="Center"
+													Margin="15,0,0,0"
+													Click="DeleteServiceClick"/>
+
+										</Grid>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</Border>
+						<Button Content="Добавить услугу"
+								Width="150" Height="40"
+								CornerRadius="10"
+								Background="#4448C1" Foreground="White"
+								HorizontalAlignment="Center"
+								Click="AddServiceClick"/>
+					</StackPanel>
+				</Grid>
+			</StackPanel>
+		</ScrollViewer>
+
+		<Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,10"
+                Content="Назад"
+                Width="100" Height="40"
+                CornerRadius="10"
+                Background="#696969" Foreground="White"
+                Click="BackButton_OnClick"/>
+	</Grid>
+</Window>

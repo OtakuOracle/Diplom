@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Elbrus.AddEditClient"
+        x:CompileBindings="False"
+        Title="Добавить нового клиента"
+		Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10">
+			<TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+					   FontSize="20"
+					   FontWeight="Bold"
+					   HorizontalAlignment="Center"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+			<TextBlock Text="Введите ФИО клиента" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="FioBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+			<TextBlock Text="Введите код клиента" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="CodeBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+			<TextBlock Text="Введите серию, № паспорта" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="PassportBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+
+			<TextBlock Text="Выберите дату рождения" HorizontalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<DatePicker x:Name="BirthdayPicker" HorizontalAlignment="Center" Margin="5"/>
+
+			<TextBlock Text="Введите адрес" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="AddressBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+			<TextBlock Text="Введите email" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="EmailBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+			<TextBlock Text="Введите пароль для клиента" VerticalAlignment="Center" Margin="5" Width="200" TextWrapping="NoWrap"/>
+			<TextBox x:Name="PasswordBox" VerticalAlignment="Center" Margin="5" Width="200"/>
+
+			<Button x:Name="AddOrUpdateButton"
+					Content="Добавить"
+					HorizontalAlignment="Center"
+					Margin="5"
+					Width="200"
+					Background="#00FF00"
+					Click="AddClient_OnClick"/>
+			<Button Content="Назад"
+					HorizontalAlignment="Center"
+					Margin="5"
+					Width="200"
+					Background="#696969"
+					Click="BackOnOrder"/>
+		</StackPanel>
+	</DockPanel>
+</Window>

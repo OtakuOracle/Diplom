@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Elbrus.AddEditService"
+        Title="Добавление услуги"
+		Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+			<TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" FontSize="20" FontWeight="Bold"/>
+		</StackPanel>
+		<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+			<TextBlock Text="Название услуги"/>
+			<TextBox x:Name="ServiceNameBox" Width="250"/>
+
+			<TextBlock Text="Код услуги"/>
+			<TextBox x:Name="ServiceCodeBox" Width="250"/>
+
+			<TextBlock Text="Цена за час"/>
+			<TextBox x:Name="CostBox" Width="250"/>
+
+			<Button x:Name="AddOrUpdateButton"
+					Content="Добавить"
+					HorizontalAlignment="Center"
+					Margin="5"
+					Width="200"
+					Background="#00FF00"
+					Click="AddServiceButton_OnClick"/>
+			<Button Content="Назад"
+					HorizontalAlignment="Center"
+					Margin="5"
+					Width="200"
+					Click="BackOnOrder"/>
+		</StackPanel>
+	</DockPanel>
+</Window>

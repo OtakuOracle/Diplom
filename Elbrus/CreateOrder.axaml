@@ -1,0 +1,187 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Elbrus.CreateOrder"
+        x:CompileBindings="False"
+        Title="Оформление заказа"
+        Width="700"
+        Height="950"
+        Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<StackPanel Margin="20" Spacing="15">
+
+			<TextBlock Text="Номер заказа" FontWeight="Bold" FontSize="18"/>
+			<TextBox x:Name="OrderNumberField"
+                     IsReadOnly="True"
+                     Watermark="Будет сгенерирован автоматически"
+                     FontSize="14"
+                     Padding="5"/>
+
+			<TextBlock Text="Выберите клиента" FontWeight="Bold" FontSize="16"/>
+			<ComboBox ItemsSource="{Binding ClientList}"
+                      SelectedItem="{Binding ChosenClient}"
+                      DisplayMemberBinding="{Binding FullName}"
+                      Width="450"
+                      HorizontalAlignment="Left"
+                      PlaceholderText="Нажмите, чтобы выбрать клиента..."/>
+
+			<TextBlock Text="Выберите инвентарь и укажите время использования" FontWeight="Bold" FontSize="16"/>
+			<StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+				<ComboBox x:Name="InventoryComboBox"
+                          ItemsSource="{Binding InventoryList}"
+                          SelectedItem="{Binding ChosenInventory}"
+                          DisplayMemberBinding="{Binding InventoryName}"
+                          Width="300"
+                          PlaceholderText="Выберите инвентарь..."/>
+				<TextBox x:Name="TimeInInventoryBox"
+                         Width="100"
+                         Watermark="Час."
+                         Text="{Binding InventoryHourSelected}"
+                         FontSize="14"/>
+				<Button Content="Добавить"
+                        Click="AddInventoryClick"
+                        Padding="10,5"
+                        Background="#4448C1"
+                        Foreground="White"/>
+			</StackPanel>
+
+			<StackPanel Spacing="10" Margin="0,15,0,0">
+
+				<StackPanel>
+					<TextBlock Text="Дата заказа" FontWeight="Bold" FontSize="16"/>
+					<DatePicker x:Name="DateOrderPicker"
+							  FontSize="14"
+							  Width="300"
+							  HorizontalAlignment="Left"/>
+				</StackPanel>
+
+				<StackPanel>
+					<TextBlock Text="Время начала" FontWeight="Bold" FontSize="16"/>
+					<TimePicker x:Name="TimeInOrderPicker"
+                             Width="300"
+                             HorizontalAlignment="Left"
+                             FontSize="14"/>
+				</StackPanel>
+
+				<StackPanel>
+					<TextBlock Text="Время окончания" FontWeight="Bold" FontSize="16"/>
+					<TimePicker x:Name="TimeOutOrderPicker"
+                             Width="300"
+                             HorizontalAlignment="Left"
+                             FontSize="14"/>
+				</StackPanel>
+
+			</StackPanel>
+
+			<TextBlock Text="Добавить услугу в заказ" FontWeight="Bold" FontSize="16" Margin="0,10,0,0"/>
+			<StackPanel Orientation="Horizontal" Spacing="10">
+				<ComboBox ItemsSource="{Binding ServiceList}"
+                          SelectedItem="{Binding ChosenService}"
+                          DisplayMemberBinding="{Binding ServiceName}"
+						   PlaceholderText="Выберите услугу..."
+                          Width="300"/>
+				<TextBox Text="{Binding HourSelected}"
+                         Width="80"
+                         Watermark="Час."
+                         FontSize="14"/>
+				<Button Content="Добавить"
+                        Click="AddServiceClick"
+                        Padding="10,5"
+                        Background="#4448C1"
+                        Foreground="White"/>
+			</StackPanel>
+
+			<TextBlock Text="Выбранные услуги" FontWeight="Bold" FontSize="16" Margin="0,10,0,0"/>
+			<ListBox ItemsSource="{Binding BasketServices}" Height="150" BorderBrush="LightGray" BorderThickness="1">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid ColumnDefinitions="*, 100, 100">
+							<TextBlock Grid.Column="0" Text="{Binding ServiceName}" VerticalAlignment="Center"/>
+							<TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}ч. по {1}р/ч">
+                                    <Binding Path="TimeInHour"/>
+                                    <Binding Path="CostPerHour"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+
+							
+							<Button Grid.Column="2"
+                                    Content="Удалить"
+                                    CommandParameter="{Binding}"
+                                    Click="RemoveServiceClick"
+                                    Foreground="Red"
+                                    HorizontalAlignment="Right"/>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+
+			<TextBlock Text="Выбранный инвентарь" FontWeight="Bold" FontSize="16" Margin="0,10,0,0"/>
+			<ListBox x:Name="InventoryBasketList"
+                   ItemsSource="{Binding BasketInventory}"
+                   Height="100"
+                   BorderBrush="LightGray"
+                   BorderThickness="1">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid ColumnDefinitions="*, 100, 100">
+							<TextBlock Grid.Column="0" Text="{Binding InventoryName}" VerticalAlignment="Center"/>
+							<TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}ч. по {1}р/ч">
+                                    <Binding Path="TimeInHourInv"/>
+                                    <Binding Path="RentalCostPerHour"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+
+							<Button Grid.Column="2"
+                                    Content="Удалить"
+                                    CommandParameter="{Binding}"
+                                    Click="RemoveInventoryClick"
+                                    Foreground="Red"
+                                    HorizontalAlignment="Right"/>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+
+			<StackPanel Spacing="10" Margin="0,20,0,0">
+				<Button Content="Оформить заказ"
+                        Click="CompleteOrderClick"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        FontSize="16"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="12"/>
+
+				<Button Content="Отмена / Назад"
+                        Click="OnLogoutClick"
+                        Background="#F99D97"
+                        Foreground="Black"
+                        FontSize="16"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="12"/>
+			</StackPanel>
+
+			<TextBlock x:Name="InfoText"
+                       Foreground="Red"
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"
+                       Text="{Binding InfoTextContent}"/>
+
+		</StackPanel>
+	</ScrollViewer>
+</Window>

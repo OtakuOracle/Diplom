@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:CompileBindings="false"
+        x:Class="Elbrus.AddEditInventory"
+        Title="Добавление и редактирование инвентаря"
+		Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+		<TextBox Margin="5" Watermark="Введите название" Text="{Binding InventoryName}" Width="200" ></TextBox>
+		<TextBox Margin="5" Watermark="Введите номер" Width="200" Text="{Binding InventoryNumber}"></TextBox>
+		<TextBox Margin="5" Watermark="Введите модель" Width="200" Text="{Binding InventoryModel}"></TextBox>
+		<TextBox Margin="5" Watermark="Введите размер" Width="200" Text="{Binding InventorySize}"></TextBox>
+		<TextBox Margin="5" Watermark="Введите цену за час аренды" Width="200" Text="{Binding RentalCostPerHour}"></TextBox>
+	<ComboBox Name="InventoryStatus"
+          Width="200"
+          Margin="5"
+          PlaceholderText="Выберите статус">
+    <ComboBox.ItemTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding InventoryStatusName}" />
+        </DataTemplate>
+    </ComboBox.ItemTemplate>
+</ComboBox>
+
+		<Image Source="{Binding Photo}" Height="100" Width="100" Margin="5" Name="ImageBox"></Image>
+		<Button Content="Добавить картинку" Background="#00FFFF" Margin="5" Click="AddImage_Click"></Button>
+		<Button Name="AddBut" Content="Добавить инвентарь" Margin="5" Background="#ADFF2F" IsVisible="False" Click="Add_Click"></Button>		
+		<Button Content="Изменить инвентарь" Margin="5" Background="#00FF00" Click="Edit_Click" IsVisible="False" Name="EditBut"></Button>
+		<Button Content="Удалить инвентарь" Margin="5" Click="Delete_Click" Background="#FF0000" IsVisible="False" Name="DeleteBut"></Button>
+		<Button Content="Назад" Margin="5" Background="#696969" Click="Back_Click"></Button>
+	</StackPanel>
+</Window>

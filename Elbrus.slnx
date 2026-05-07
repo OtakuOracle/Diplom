@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Elbrus/Elbrus.csproj" />
+  <Project Path="TgBot/TgBot.csproj" Id="213f3f75-3feb-48fb-b1f7-6e9b24bb7e48" />
+</Solution>

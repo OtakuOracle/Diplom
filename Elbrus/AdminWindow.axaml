@@ -1,0 +1,107 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Elbrus.AdminWindow"
+        Title="Окно администратора"
+        xmlns:vm="using:Elbrus.Models"
+        Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+		<Border Grid.Row="0" Grid.Column="0" CornerRadius="15" Background="#4448C1" Padding="15" Margin="10,10,10,0">
+			<Grid ColumnDefinitions="*, Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+					<Border Width="80" Height="80" CornerRadius="40" Background="White"
+                            BorderBrush="LightGray" BorderThickness="1" Margin="0,0,20,0">
+						<Border.Clip>
+							<EllipseGeometry Center="40,40" RadiusX="40" RadiusY="40" />
+						</Border.Clip>
+						<Image x:Name="UserImage" Width="80" Height="80" Stretch="UniformToFill"/>
+					</Border>
+					<StackPanel VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Ваше имя: " Foreground="White" FontWeight="Bold"/>
+							<TextBlock x:Name="FullName" Foreground="White"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+							<TextBlock Text="Ваша должность: " Foreground="White" FontWeight="Bold"/>
+							<TextBlock x:Name="RoleName" Foreground="White"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+							<Border Background="#6666FF" CornerRadius="5" Padding="5">
+								<TextBlock x:Name="SessionTimerText" Foreground="White"/>
+							</Border>
+						</StackPanel>
+						<TextBlock x:Name="SessionWarningText" Foreground="Red" FontSize="10" Margin="0,5,0,0"/>
+					</StackPanel>
+				</StackPanel>
+				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+					<Button Content="Посмотреть инвентарь"
+                            x:Name="InventoryButton"
+                            Height="30"
+                            HorizontalAlignment="Right"
+							Background="#00FF00"
+                            Click="InventoryButton_OnClick" />
+				</StackPanel>
+			</Grid>
+		</Border>
+
+
+
+		<Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="700">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" VerticalAlignment="Top" Margin="0,0,0,10">
+				<ComboBox x:Name="LoginComboBox"
+                          Width="150"
+                          PlaceholderText="Все пользователи"/>
+				<ComboBox x:Name="SortComboBox"
+                          Width="150"
+                          Height="30"
+                          SelectedIndex="0">
+					<ComboBoxItem>Сначала новые</ComboBoxItem>
+					<ComboBoxItem>Сначала старые</ComboBoxItem>
+				</ComboBox>
+				<Button Content="Сбросить"
+                        x:Name="ResetButton" Background="#696969" Height="30"/>
+			</StackPanel>
+
+			<ListBox x:Name="LastEnterBox" Margin="0,40,0,0" Height="350" VerticalAlignment="Top" HorizontalAlignment="Center" Width="600">
+				<ListBox.ItemTemplate>
+					<DataTemplate x:DataType="vm:Employee">
+						<StackPanel Margin="5" Spacing="3" HorizontalAlignment="Center">
+							<TextBlock Text="{Binding LastEnter, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" FontWeight="Bold"/>
+							<TextBlock Text="{Binding Login}" HorizontalAlignment="Center"/>
+						</StackPanel>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Grid>
+		<Border Grid.Row="2" Grid.Column="0" Padding="10" Margin="10,10,10,10" CornerRadius="15">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Button Content="Назад"
+                x:Name="BackButton"
+                Height="30"
+                MinHeight="30"
+                MinWidth="150"
+                Background="#A9A9A9"
+                Foreground="Black"
+                Click="BackButton_OnClick" 
+                HorizontalContentAlignment="Center"  
+                VerticalContentAlignment="Center"/> 
+			</StackPanel>
+		</Border>
+	</Grid>
+</Window>

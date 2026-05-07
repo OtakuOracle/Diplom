@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:CompileBindings="false"
+        x:Class="Elbrus.InventoryWindow"
+        Title="Инвентарь"
+	    Icon="Icon/icon.png">
+
+	<Window.Background>
+		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+	</Window.Background>
+
+	<DockPanel>
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="5">
+			<TextBox Watermark="Поиск" Width="200" Margin="5" Name="SearchBox" KeyUp="SearchBox_KeyUp"></TextBox>
+			
+			<ComboBox Margin="5" Width="200" Name="Sort" SelectionChanged="Sort_SelectionChanged">
+				<ComboBoxItem>по возрастанию цены</ComboBoxItem>
+				<ComboBoxItem>по убыванию цены</ComboBoxItem>
+			</ComboBox>
+
+			<ComboBox Margin="5" Width="200" Name="Filter" SelectionChanged="Filter_SelectionChanged"></ComboBox>
+		</StackPanel>
+		
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+			<Button Content="Назад" Margin="5" Background="#696969" Click="Back_Click"></Button>
+			<Button Content="Добавить инвентарь" Margin="5" Background="#00FF00" Click="Add_Click" Name="AddButton"></Button>
+		</StackPanel>
+		<ListBox Name="InventoriesBox" SelectionChanged="InventoriesBox_SelectionChanged" Background="Transparent">
+			<ListBox.ItemsPanel>
+				<ItemsPanelTemplate>
+					<UniformGrid Columns="1"></UniformGrid>
+				</ItemsPanelTemplate>
+			</ListBox.ItemsPanel>
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Border BorderBrush="Black" BorderThickness="1" Background="Transparent">
+						<DockPanel>
+							<Border BorderBrush="Black" BorderThickness="1" Margin="5" DockPanel.Dock="Left" Background="Transparent">
+								<StackPanel  Orientation="Vertical" VerticalAlignment="Center">
+									<Image Height="80" Width="80 " Margin="5" Source="{Binding GetPhoto}"></Image>
+								</StackPanel>
+							</Border>
+
+							<Border BorderBrush="Black" BorderThickness="1" Margin="5" DockPanel.Dock="Right" Background="Transparent">
+								<StackPanel  Orientation="Vertical" VerticalAlignment="Center">
+									<TextBlock Text="{Binding RentalCostPerHour,StringFormat='Цена за час:{0}'}" Margin="5"/>
+								</StackPanel>
+							</Border>
+							
+							<Border BorderBrush="Black" BorderThickness="1" Margin="5" Background="Transparent">
+								<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center">
+									<TextBlock Text="{Binding InventoryName,StringFormat='Название:{0}'}" Margin="5"/>
+									<TextBlock Text="{Binding InventoryNumber,StringFormat='Код:{0}'}" Margin="5"/>
+									<TextBlock Text="{Binding InventoryModel,StringFormat='Модель:{0}'}" Margin="5"/>
+									<TextBlock Text="{Binding InventorySize,StringFormat='Размер:{0}'}" Margin="5"/>
+									<TextBlock Text="{Binding InventoryStatus.InventoryStatusName,StringFormat='Статус:{0}'}" Margin="5"/>
+								</StackPanel>
+							</Border>
+						</DockPanel>
+					</Border>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+
+	</DockPanel>
+
+</Window>
