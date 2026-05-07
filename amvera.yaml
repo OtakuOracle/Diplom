@@ -1,0 +1,10 @@
+meta:
+  environment: docker
+  toolchain:
+    name: docker
+build:
+  dockerfile: Dockerfile
+run:
+  persistenceMount: /data
+  containerPort: "80"
+  servicePort: "80"
