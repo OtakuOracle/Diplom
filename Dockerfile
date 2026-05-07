@@ -1,24 +1,20 @@
-﻿# 1. Используем SDK 8.0 для сборки
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
-WORKDIR /app
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /src
 
-# 2. Копируем ВЕСЬ корень проекта (все папки и файл .slnx)
-COPY . ./
+# 1. Копируем всё содержимое
+COPY . .
 
-# 3. Восстанавливаем зависимости для всего решения сразу
-# Это важно, чтобы проекты TgBot и Elbrus "увидели" друг друга
-RUN dotnet restore
+# 2. Пробуем восстановить зависимости напрямую для проекта бота
+# Мы указываем точный путь к .csproj
+RUN dotnet restore "TgBot/TgBot.csproj"
 
-# 4. Собираем именно бота. 
-# Убедитесь, что внутри папки TgBot файл называется именно TgBot.csproj (с большой буквы!)
-RUN dotnet publish TgBot/TgBot.csproj -c Release -o out
+# 3. Собираем проект бота
+RUN dotnet publish "TgBot/TgBot.csproj" -c Release -o /app/out
 
-# 5. Образ для запуска
+# 4. Образ запуска
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# 6. Запуск бота
-# Если после сборки файл называется TgBot.dll, оставляем так.
-# Если вдруг он называется по-другому, поправьте имя.
+# 5. Проверьте, что в папке TgBot после сборки файл называется именно TgBot.dll
 ENTRYPOINT ["dotnet", "TgBot.dll"]
