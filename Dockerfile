@@ -6,12 +6,12 @@ WORKDIR /app
 # Это решит проблемы с путями между проектами TgBot и Elbrus
 COPY . ./
 
-# 3. Восстанавливаем зависимости
-# Мы вызываем restore для всего решения или конкретно для бота
-RUN dotnet restore TgBot/TgBot.csproj
+# 3. Восстанавливаем зависимости для всего решения
+RUN dotnet restore
 
-# 4. Публикуем (собираем) бота
+# 4. Собираем конкретно проект бота
 RUN dotnet publish TgBot/TgBot.csproj -c Release -o out
+
 
 # 5. Финальный образ для запуска
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
