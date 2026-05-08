@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using Elbrus.Models; 
+using Elbrus.Models;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums; 
+using Telegram.Bot.Types.Enums;
 
 namespace TgBot
 {
     public class Program
     {
-        public static async Task Main(string[] args) 
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +26,8 @@ namespace TgBot
             builder.Services.AddDbContext<DiplomContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddControllers(); 
+            builder.Services.AddControllers().AddNewtonsoftJson();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -41,9 +40,7 @@ namespace TgBot
             }
 
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.MapControllers();
 
             var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
@@ -59,9 +56,10 @@ namespace TgBot
             {
                 try
                 {
-                    object value = botClient.SetWebhook(
+                    // установка вебхука
+                    await botClient.SetWebhook(
                         url: webhookUrl,
-                        allowedUpdates: Array.Empty<UpdateType>() 
+                        allowedUpdates: Array.Empty<UpdateType>()
                     );
                     logger.LogInformation($"Вебхук успешно установлен на: {webhookUrl}");
                 }
@@ -69,10 +67,9 @@ namespace TgBot
                 {
                     logger.LogError($"Ошибка при установке вебхука: {ex.Message}");
                 }
-
             }
 
-            await app.RunAsync(); 
+            await app.RunAsync();
         }
     }
 }

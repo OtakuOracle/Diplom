@@ -7,7 +7,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace TgBot.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("messages")]
     public class MessagesController : ControllerBase
     {
         private readonly ITelegramBotClient _botClient;
