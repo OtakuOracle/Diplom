@@ -1,22 +1,21 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+﻿# Используем SDK версии 10.0 для сборки
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-env
 WORKDIR /app
 
-# Копируем абсолютно всё
+# Копируем файлы
 COPY . ./
 
-# ЭТА СТРОКА ВАЖНА: она покажет нам структуру файлов в логах, если сборка упадет
-RUN ls -R
-
-# Мы заходим в папку проекта и запускаем сборку оттуда
+# Заходим в папку с ботом
 WORKDIR /app/TgBot
+
+# Восстанавливаем зависимости и собираем проект
 RUN dotnet restore
 RUN dotnet publish -c Release -o /out
 
-# Образ запуска
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Используем Runtime версии 10.0 для запуска
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /out .
 
-# Убедитесь, что ваш выходной файл называется именно TgBot.dll
-# Если проект называется иначе, поменяйте имя ниже
+# Запуск (убедитесь, что файл называется TgBot.dll)
 ENTRYPOINT ["dotnet", "TgBot.dll"]
