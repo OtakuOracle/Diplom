@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Elbrus.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
-using TgBot.Controllers; 
 
 namespace TgBot
 {
@@ -27,9 +26,7 @@ namespace TgBot
             builder.Services.AddDbContext<DiplomContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddControllers()
-                .AddApplicationPart(typeof(MessagesController).Assembly)
-                .AddNewtonsoftJson();
+            builder.Services.AddControllers().AddNewtonsoftJson();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -44,12 +41,7 @@ namespace TgBot
 
             app.UseRouting();
             app.UseAuthorization();
-            
             app.MapControllers();
-
-            // --- ИЗМЕНЕНИЕ 2: Тестовые пути для проверки в браузере ---
-            app.MapGet("/", () => "Главная страница: Приложение запущено!");
-            app.MapGet("/test", () => "Тестовый путь: Доступен успешно!");
 
             var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -81,3 +73,4 @@ namespace TgBot
         }
     }
 }
+
