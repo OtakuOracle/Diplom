@@ -2,11 +2,12 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace TgBot.Controllers
 {
     [ApiController]
-    [Route("messages")]
+    [Route("messages")] // Этот путь должен строго совпадать с концом URL в вебхуке
     public class MessagesController : ControllerBase
     {
         private readonly ITelegramBotClient _botClient;
@@ -19,30 +20,52 @@ namespace TgBot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] object rawUpdate)
+        public async Task<IActionResult> Post()
         {
-            _logger.LogInformation(">>> ПРИШЕЛ ЗАПРОС ОТ ТЕЛЕГРАМ!");
+            string body;
+            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
+            {
+                body = await reader.ReadToEndAsync();
+            }
+
+            _logger.LogInformation("--- НОВОЕ СООБЩЕНИЕ ОТ TELEGRAM ---");
+            _logger.LogInformation($"RAW JSON: {body}");
+
+            if (string.IsNullOrEmpty(body))
+            {
+                _logger.LogWarning("Пришел пустой запрос.");
+                return Ok();
+            }
 
             try
             {
-                var json = rawUpdate.ToString();
-                _logger.LogInformation($"JSON данных: {json}");
+                var update = JsonConvert.DeserializeObject<Update>(body);
 
-                var update = JsonConvert.DeserializeObject<Update>(json);
+                if (update == null) return Ok();
 
-                if (update?.Message != null)
+                if (update.Message != null && !string.IsNullOrEmpty(update.Message.Text))
                 {
-                    _logger.LogInformation($"Текст сообщения: {update.Message.Text}");
+                    var chatId = update.Message.Chat.Id;
+                    var messageText = update.Message.Text;
 
-                    if (update.Message.Text == "/start")
+                    _logger.LogInformation($"Текст сообщения: {messageText} от ID: {chatId}");
+
+                    if (messageText == "/start")
                     {
-                        await _botClient.SendMessage(update.Message.Chat.Id, "Бот видит вас!");
+                        await _botClient.SendMessage(
+                            chatId: chatId,
+                            text: "✅ Связь установлена! Бот работает и видит ваши сообщения."
+                        );
+                    }
+                    else 
+                    {
+                        await _botClient.SendMessage(chatId, $"Вы написали: {messageText}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"ОШИБКА ОБРАБОТКИ: {ex.Message}");
+                _logger.LogError($"ОШИБКА В КОНТРОЛЛЕРЕ: {ex.Message}");
             }
 
             return Ok();
