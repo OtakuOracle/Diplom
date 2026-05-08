@@ -2,16 +2,16 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Requests;  // Добавьте этот using
+using Telegram.Bot.Types.ReplyMarkups; 
 
 namespace TgBot.Controllers
 {
     [ApiController]
-    [Route("[controller]")] // Маршрут будет /messages
+    [Route("[controller]")]
     public class MessagesController : ControllerBase
     {
         private readonly ITelegramBotClient _botClient;
-        private readonly ILogger<MessagesController> _logger; // Добавим логирование
+        private readonly ILogger<MessagesController> _logger;
 
         public MessagesController(ITelegramBotClient botClient, ILogger<MessagesController> logger)
         {
@@ -19,67 +19,66 @@ namespace TgBot.Controllers
             _logger = logger;
         }
 
-        // Этот метод будет получать все обновления от Telegram
-        [HttpPost] // Telegram отправляет обновления через POST
+        [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            if (update == null)
-            {
-                _logger.LogWarning("Получен пустой Update.");
-                return BadRequest(); // Возвращаем Bad Request, если обновление пустое
-            }
+            if (update == null) return Ok();
 
-            _logger.LogInformation($"Получен Update типа: {update.Type}");
-
-            // Обрабатываем только сообщения
-            if (update.Type == UpdateType.Message && update.Message != null)
+            if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
                 var message = update.Message;
                 var chatId = message.Chat.Id;
-                var messageText = message.Text;
 
-                _logger.LogInformation($"Получено сообщение от чата {chatId}: {messageText}");
-
-                // Проверяем, является ли сообщение командой /start
-                if (messageText != null && messageText.StartsWith("/start"))
+                if (message.Text.StartsWith("/start"))
                 {
-                    try
-                    {
-                        string welcomeMessage = "Добро пожаловать" +
-                                                "\n\n*Что можно сделать:*";
-                                               
-                        await _botClient.SendMessage( // В версии 22.x метод часто называется просто SendMessage
-                            chatId: chatId,
-                            text: welcomeMessage,
-                            parseMode: ParseMode.Markdown
-                        );
-
-
-                        _logger.LogInformation($"Приветственное сообщение успешно отправлено в чат {chatId}.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Ошибка при отправке приветственного сообщения в чат {chatId}.");
-                        // В случае ошибки, Telegram всё равно ожидает 200 OK
-                    }
-                }
-                // Здесь можно добавить обработку других команд или обычных текстовых сообщений
-                else
-                {
-                    // Пример: эхо-ответ для любых других сообщений
-                    // await _botClient.SendTextMessageAsync(
-                    //     chatId: chatId,
-                    //     text: $"Вы сказали: {messageText}"
-                    // );
+                    await SendWelcomeMenu(chatId);
                 }
             }
-            // Если вам нужно обрабатывать другие типы обновлений (например, колбэки от кнопок, редактирования сообщений и т.д.),
-            // вы можете добавить здесь дополнительные блоки `if (update.Type == ...)`
 
-            // Telegram ожидает, что вы вернете 200 OK, чтобы он знал, что обновление было успешно получено.
+            if (update.Type == UpdateType.CallbackQuery && update.CallbackQuery != null)
+            {
+                var callbackQuery = update.CallbackQuery;
+                _logger.LogInformation($"Нажата кнопка: {callbackQuery.Data}");
+
+                if (callbackQuery.Data == "help")
+                {
+                    await _botClient.SendMessage(callbackQuery.Message.Chat.Id, "Тут будет инструкция...");
+                }
+
+                return Ok();
+            }
+
             return Ok();
         }
 
+        private async Task SendWelcomeMenu(long chatId)
+        {
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                // Первый ряд кнопок
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData("❓ Что можно сделать", "help"),
+                    InlineKeyboardButton.WithCallbackData("📚 Обзор", "review"),
+                },
 
+            });
+
+            string welcomeText = "👋 *Добро пожаловать!*\n\nВыберите действие ниже:";
+
+            try
+            {
+                await _botClient.SendMessage(
+                    chatId: chatId,
+                    text: welcomeText,
+                    parseMode: ParseMode.Markdown,
+                    replyMarkup: inlineKeyboard 
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при отправке меню");
+            }
+        }
     }
 }
