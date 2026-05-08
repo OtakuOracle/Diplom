@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace TgBot.Controllers
 {
     [ApiController]
-    [Route("messages")] // Этот путь должен строго совпадать с концом URL в вебхуке
+    [Route("messages")]
     public class MessagesController : ControllerBase
     {
         private readonly ITelegramBotClient _botClient;
@@ -19,43 +17,31 @@ namespace TgBot.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Post()
+        // Этот метод сработает, когда вы просто перейдете по ссылке в браузере
+        [HttpGet]
+        public IActionResult Get()
         {
-            string body;
-            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
-            {
-                body = await reader.ReadToEndAsync();
-            }
+            return Ok("✅ Контроллер сообщений активен и готов к работе!");
+        }
 
+        // Этот метод сработает, когда Telegram пришлет сообщение
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Update update)
+        {
             _logger.LogInformation("--- НОВОЕ СООБЩЕНИЕ ОТ TELEGRAM ---");
-            _logger.LogInformation($"RAW JSON: {body}");
 
-            if (string.IsNullOrEmpty(body))
-            {
-                _logger.LogWarning("Пришел пустой запрос.");
-                return Ok();
-            }
+            if (update == null) return Ok();
 
             try
             {
-                var update = JsonConvert.DeserializeObject<Update>(body);
-
-                if (update == null) return Ok();
-
-                if (update.Message != null && !string.IsNullOrEmpty(update.Message.Text))
+                if (update.Message is { Text: { } messageText })
                 {
                     var chatId = update.Message.Chat.Id;
-                    var messageText = update.Message.Text;
-
-                    _logger.LogInformation($"Текст сообщения: {messageText} от ID: {chatId}");
+                    _logger.LogInformation($"Текст: {messageText} от ID: {chatId}");
 
                     if (messageText == "/start")
                     {
-                        await _botClient.SendMessage(
-                            chatId: chatId,
-                            text: "✅ Связь установлена! Бот работает и видит ваши сообщения."
-                        );
+                        await _botClient.SendMessage(chatId, "✅ Связь установлена! Бот работает.");
                     }
                     else 
                     {
@@ -65,7 +51,7 @@ namespace TgBot.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"ОШИБКА В КОНТРОЛЛЕРЕ: {ex.Message}");
+                _logger.LogError($"Ошибка: {ex.Message}");
             }
 
             return Ok();
