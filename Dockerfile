@@ -17,5 +17,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /out .
 
+# ДОБАВЛЕННЫЕ СТРОКИ ДЛЯ ПОРТА
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
 # Запуск (убедитесь, что файл называется TgBot.dll)
 ENTRYPOINT ["dotnet", "TgBot.dll"]

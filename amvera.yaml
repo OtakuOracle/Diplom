@@ -6,5 +6,5 @@ build:
   dockerfile: Dockerfile
 run:
   persistenceMount: /data
-  containerPort: "80"
+  containerPort: "8080"  
   servicePort: "80"
