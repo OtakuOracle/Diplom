@@ -5,5 +5,5 @@ meta:
 build:
   dockerfile: Dockerfile
 run:
-  persistenceMount: /data
   port: 8080
+  persistenceMount: /data
