@@ -11,7 +11,7 @@ namespace TgBot
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Настройка порта для Amvera
+            // Порт для Amvera
             builder.WebHost.UseUrls("http://*:8080");
 
             var telegramBotToken = builder.Configuration["TelegramBot:Token"];
@@ -20,14 +20,21 @@ namespace TgBot
                 throw new InvalidOperationException("Token not found!");
             }
 
-            // Сервисы
+            // Логирование
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
-            builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramBotToken));
+
+            // Telegram bot
+            builder.Services.AddSingleton<ITelegramBotClient>(
+                new TelegramBotClient(telegramBotToken));
+
+            // База данных
             builder.Services.AddDbContext<DiplomContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddControllers().AddNewtonsoftJson();
+            // Контроллеры
+            builder.Services.AddControllers();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -35,16 +42,17 @@ namespace TgBot
 
             app.UseSwagger();
             app.UseSwaggerUI();
+
             app.UseRouting();
             app.UseAuthorization();
 
-            // 1. Главная страница (для проверки, что контейнер жив)
+            // Проверка работы контейнера
             app.MapGet("/", () => "✅ Бот запущен и работает на порту 8080!");
 
-            // 2. Подключаем контроллеры (MessagesController сам заберет адрес /messages)
+            // Контроллеры
             app.MapControllers();
 
-            // Установка вебхука
+            // Установка webhook
             var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var webhookUrl = builder.Configuration["TelegramBot:WebhookUrl"];
@@ -53,7 +61,11 @@ namespace TgBot
             {
                 try
                 {
-                    await botClient.SetWebhook(url: webhookUrl, allowedUpdates: Array.Empty<UpdateType>());
+                    await botClient.SetWebhook(
+                        url: webhookUrl,
+                        allowedUpdates: Array.Empty<UpdateType>()
+                    );
+
                     logger.LogInformation($"🚀 Вебхук установлен: {webhookUrl}");
                 }
                 catch (Exception ex)

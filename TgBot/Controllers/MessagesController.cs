@@ -17,41 +17,40 @@ namespace TgBot.Controllers
             _logger = logger;
         }
 
-        // Этот метод сработает, когда вы просто перейдете по ссылке в браузере
         [HttpGet]
         public IActionResult Get()
         {
             return Ok("✅ Контроллер сообщений активен и готов к работе!");
         }
 
-        // Этот метод сработает, когда Telegram пришлет сообщение
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Update update)
+        [Consumes("application/json")]
+        public async Task<IActionResult> Post([FromBody] Update? update)
         {
-            _logger.LogInformation("--- НОВОЕ СООБЩЕНИЕ ОТ TELEGRAM ---");
+            _logger.LogInformation("Telegram update received");
 
-            if (update == null) return Ok();
+            if (update?.Message?.Text == null)
+                return Ok();
 
             try
             {
-                if (update.Message is { Text: { } messageText })
-                {
-                    var chatId = update.Message.Chat.Id;
-                    _logger.LogInformation($"Текст: {messageText} от ID: {chatId}");
+                var chatId = update.Message.Chat.Id;
+                var text = update.Message.Text;
 
-                    if (messageText == "/start")
-                    {
-                        await _botClient.SendMessage(chatId, "✅ Связь установлена! Бот работает.");
-                    }
-                    else 
-                    {
-                        await _botClient.SendMessage(chatId, $"Вы написали: {messageText}");
-                    }
+                _logger.LogInformation($"Message: {text}");
+
+                if (text == "/start")
+                {
+                    await _botClient.SendMessage(chatId, "✅ Связь установлена! Бот работает.");
+                }
+                else
+                {
+                    await _botClient.SendMessage(chatId, $"Вы написали: {text}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ошибка: {ex.Message}");
+                _logger.LogError(ex, "Telegram processing error");
             }
 
             return Ok();
