@@ -25,7 +25,6 @@ namespace TgBot.Controllers
             _db = db;
         }
 
-
         [HttpGet]
         public IActionResult Get()
         {
@@ -38,12 +37,39 @@ namespace TgBot.Controllers
         {
             _logger.LogInformation("Telegram update received");
 
-            if (update?.Message?.Text == null)
-                return Ok();
-
             try
             {
-                var chatId = update.Message.Chat.Id;
+                // Обработка нажатий на кнопки
+                if (update?.CallbackQuery != null)
+                {
+                    var chatId = update.CallbackQuery.Message.Chat.Id;
+                    var data = update.CallbackQuery.Data;
+
+                    if (data.StartsWith("inv_"))
+                    {
+                        var id = int.Parse(data.Replace("inv_", ""));
+
+                        var item = await _db.Inventories.FindAsync(id);
+
+                        if (item != null)
+                        {
+                            var message =
+                                $"🎿 {item.InventoryName}\n\n" +
+                                $"Модель: {item.InventoryModel}\n" +
+                                $"Размер: {item.InventorySize}\n" +
+                                $"💰 Цена: {item.RentalCostPerHour} ₽ / час";
+
+                            await _botClient.SendMessage(chatId, message);
+                        }
+                    }
+
+                    return Ok();
+                }
+
+                if (update?.Message?.Text == null)
+                    return Ok();
+
+                var chatIdMessage = update.Message.Chat.Id;
                 var text = update.Message.Text;
 
                 _logger.LogInformation($"Message: {text}");
@@ -51,41 +77,40 @@ namespace TgBot.Controllers
                 if (text == "/start")
                 {
                     await _botClient.SendMessage(
-                        chatId,
-                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!\nВведите /inventory чтобы посмотреть доступный инвентарь."
+                        chatIdMessage,
+                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!\n\nВведите /inventory чтобы посмотреть доступный инвентарь."
                     );
                 }
                 else if (text == "/inventory")
                 {
-                    var canConnect = await _db.Database.CanConnectAsync();
-                    _logger.LogInformation($"DB connection: {canConnect}");
-
                     var items = await _db.Inventories.ToListAsync();
-
 
                     if (!items.Any())
                     {
-                        await _botClient.SendMessage(chatId, "Инвентарь пока не добавлен.");
+                        await _botClient.SendMessage(chatIdMessage, "Инвентарь пока не добавлен.");
                     }
                     else
                     {
-                        var message = "🎿 Доступный инвентарь:\n\n";
+                        var buttons = items
+                            .Select(x => InlineKeyboardButton.WithCallbackData(
+                                x.InventoryName,
+                                $"inv_{x.InventoryId}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToArray();
 
-                        foreach (var item in items)
-                        {
-                            message +=
-                                $"• {item.InventoryName}\n" +
-                                $"  Модель: {item.InventoryModel}\n" +
-                                $"  Размер: {item.InventorySize}\n" +
-                                $"  Цена за час: {item.RentalCostPerHour} ₽\n\n";
-                        }
+                        var keyboard = new InlineKeyboardMarkup(buttons);
 
-                        await _botClient.SendMessage(chatId, message);
+                        await _botClient.SendMessage(
+                            chatIdMessage,
+                            "🎿 Выберите инвентарь:",
+                            replyMarkup: keyboard
+                        );
                     }
                 }
                 else
                 {
-                    await _botClient.SendMessage(chatId, $"Вы написали: {text}");
+                    await _botClient.SendMessage(chatIdMessage, $"Вы написали: {text}");
                 }
             }
             catch (Exception ex)
@@ -95,6 +120,5 @@ namespace TgBot.Controllers
 
             return Ok();
         }
-
     }
 }
