@@ -25,77 +25,72 @@ namespace TgBot.Controllers
             _db = db;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Update update)
+
+        [HttpGet]
+        public IActionResult Get()
         {
+            return Ok("✅ Контроллер сообщений активен и готов к работе!");
+        }
+
+        [HttpPost]
+        [Consumes("application/json")]
+        public async Task<IActionResult> Post([FromBody] Update? update)
+        {
+            _logger.LogInformation("Telegram update received");
+
+            if (update?.Message?.Text == null)
+                return Ok();
+
             try
             {
-                if (update.Message != null)
+                var chatId = update.Message.Chat.Id;
+                var text = update.Message.Text;
+
+                _logger.LogInformation($"Message: {text}");
+
+                if (text == "/start")
                 {
-                    var chatId = update.Message.Chat.Id;
-                    var text = update.Message.Text;
+                    await _botClient.SendMessage(
+                        chatId,
+                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!\nВведите /inventory чтобы посмотреть доступный инвентарь."
+                    );
+                }
+                else if (text == "/inventory")
+                {
+                    var items = await _db.Inventories.ToListAsync();
 
-                    if (text == "/start")
+                    if (!items.Any())
                     {
-                        await _botClient.SendMessage(
-                            chatId,
-                            "🏔 Добро пожаловать!\nВведите /inventory чтобы посмотреть список доступного инвентаря."
-                        );
+                        await _botClient.SendMessage(chatId, "Инвентарь пока не добавлен.");
                     }
-
-                    if (text == "/inventory")
+                    else
                     {
-                        var items = await _db.Inventories.ToListAsync();
+                        var message = "🎿 Доступный инвентарь:\n\n";
 
-                        var buttons = items
-                            .Select(i => InlineKeyboardButton.WithCallbackData(
-                                i.InventoryName,
-                                $"inventory_{i.InventoryId}"
-                            ))
-                            .Select(b => new[] { b })
-                            .ToArray();
+                        foreach (var item in items)
+                        {
+                            message +=
+                                $"• {item.InventoryName}\n" +
+                                $"  Модель: {item.InventoryModel}\n" +
+                                $"  Размер: {item.InventorySize}\n" +
+                                $"  Цена за час: {item.RentalCostPerHour} ₽\n\n";
+                        }
 
-                        var keyboard = new InlineKeyboardMarkup(buttons);
-
-                        await _botClient.SendMessage(
-                            chatId,
-                            "🎿 Выберите инвентарь:",
-                            replyMarkup: keyboard
-                        );
+                        await _botClient.SendMessage(chatId, message);
                     }
                 }
-
-                if (update.CallbackQuery != null)
+                else
                 {
-                    var data = update.CallbackQuery.Data;
-                    var chatId = update.CallbackQuery.Message.Chat.Id;
-
-                    if (data.StartsWith("inventory_"))
-                    {
-                        var id = int.Parse(data.Replace("inventory_", ""));
-
-                        var item = await _db.Inventories
-                            .FirstOrDefaultAsync(x => x.InventoryId == id);
-
-                        if (item != null)
-                        {
-                            var message =
-                                $"🎿 Инвентарь: {item.InventoryName}\n\n" +
-                                $"Модель: {item.InventoryModel}\n" +
-                                $"Размер: {item.InventorySize}\n" +
-                                $"Цена за час: {item.RentalCostPerHour} ₽";
-
-                            await _botClient.SendMessage(chatId, message);
-                        }
-                    }
+                    await _botClient.SendMessage(chatId, $"Вы написали: {text}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Telegram error");
+                _logger.LogError(ex, "Telegram processing error");
             }
 
             return Ok();
         }
+
+
     }
-}
