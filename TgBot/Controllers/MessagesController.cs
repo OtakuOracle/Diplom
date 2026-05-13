@@ -35,10 +35,10 @@ namespace TgBot.Controllers
         {
             name = name.ToLower();
 
-            if (name.Contains("лыж")) return "🎿";
+            if (name.Contains("лыжи")) return "🎿";
             if (name.Contains("сноуборд")) return "🏂";
-            if (name.Contains("перчат")) return "🧤";
-            if (name.Contains("очк")) return "🥽";
+            if (name.Contains("перчатки")) return "🧤";
+            if (name.Contains("очки")) return "🥽";
             if (name.Contains("коньк")) return "⛸";
             if (name.Contains("шлем")) return "🪖";
             if (name.Contains("снегоход") || name.Contains("снегокат")) return "🛷";
@@ -76,17 +76,30 @@ namespace TgBot.Controllers
                 if (update?.CallbackQuery != null)
                 {
                     var chatId = update.CallbackQuery.Message.Chat.Id;
+                    var messageId = update.CallbackQuery.Message.MessageId;
                     var data = update.CallbackQuery.Data;
 
-                    if (data == "open_inventory")
+                    if (data == "open_inventory" || data == "back_inventory")
                     {
-                        await SendInventory(chatId);
-                        return Ok();
-                    }
+                        var items = await _db.Inventories.ToListAsync();
 
-                    if (data == "back_inventory")
-                    {
-                        await SendInventory(chatId);
+                        var buttons = items
+                            .Select(x => InlineKeyboardButton.WithCallbackData(
+                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
+                                $"inv_{x.InventoryId}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToArray();
+
+                        var keyboard = new InlineKeyboardMarkup(buttons);
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "🎿 Выберите инвентарь:",
+                            replyMarkup: keyboard
+                        );
+
                         return Ok();
                     }
 
@@ -107,13 +120,14 @@ namespace TgBot.Controllers
 
                             var keyboard = new InlineKeyboardMarkup(
                                 InlineKeyboardButton.WithCallbackData(
-                                    "⬅ Назад к списку",
+                                    "⬅️ Назад к списку",
                                     "back_inventory"
                                 )
                             );
 
-                            await _botClient.SendMessage(
+                            await _botClient.EditMessageText(
                                 chatId,
+                                messageId,
                                 message,
                                 replyMarkup: keyboard
                             );
@@ -144,7 +158,6 @@ namespace TgBot.Controllers
                         replyMarkup: keyboard
                     );
                 }
-
             }
             catch (Exception ex)
             {
@@ -153,5 +166,6 @@ namespace TgBot.Controllers
 
             return Ok();
         }
+
     }
 }
