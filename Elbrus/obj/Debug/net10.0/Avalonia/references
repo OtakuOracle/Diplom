@@ -27,18 +27,18 @@ C:\Users\Admin\.nuget\packages\dynamicdata\9.4.1\lib\net9.0\DynamicData.dll
 C:\Users\Admin\.nuget\packages\harfbuzzsharp\8.3.1.1\lib\net8.0\HarfBuzzSharp.dll
 C:\Users\Admin\.nuget\packages\microcom.runtime\0.11.0\lib\net5.0\MicroCom.Runtime.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.5\ref\net10.0\Microsoft.CSharp.dll
-C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore.abstractions\10.0.5\lib\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
-C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore\10.0.5\lib\net10.0\Microsoft.EntityFrameworkCore.dll
-C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore.relational\10.0.5\lib\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.caching.abstractions\10.0.5\lib\net10.0\Microsoft.Extensions.Caching.Abstractions.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.caching.memory\10.0.5\lib\net10.0\Microsoft.Extensions.Caching.Memory.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.configuration.abstractions\10.0.5\lib\net10.0\Microsoft.Extensions.Configuration.Abstractions.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\10.0.5\lib\net10.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.dependencyinjection\10.0.5\lib\net10.0\Microsoft.Extensions.DependencyInjection.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.logging.abstractions\10.0.5\lib\net10.0\Microsoft.Extensions.Logging.Abstractions.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.logging\10.0.5\lib\net10.0\Microsoft.Extensions.Logging.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.options\10.0.5\lib\net10.0\Microsoft.Extensions.Options.dll
-C:\Users\Admin\.nuget\packages\microsoft.extensions.primitives\10.0.5\lib\net10.0\Microsoft.Extensions.Primitives.dll
+C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore.abstractions\10.0.8\lib\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore\10.0.8\lib\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\Admin\.nuget\packages\microsoft.entityframeworkcore.relational\10.0.8\lib\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.caching.abstractions\10.0.8\lib\net10.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.caching.memory\10.0.8\lib\net10.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.configuration.abstractions\10.0.8\lib\net10.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\10.0.8\lib\net10.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.dependencyinjection\10.0.8\lib\net10.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.logging.abstractions\10.0.8\lib\net10.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.logging\10.0.8\lib\net10.0\Microsoft.Extensions.Logging.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.options\10.0.8\lib\net10.0\Microsoft.Extensions.Options.dll
+C:\Users\Admin\.nuget\packages\microsoft.extensions.primitives\10.0.8\lib\net10.0\Microsoft.Extensions.Primitives.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.5\ref\net10.0\Microsoft.VisualBasic.Core.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.5\ref\net10.0\Microsoft.VisualBasic.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.5\ref\net10.0\Microsoft.Win32.Primitives.dll

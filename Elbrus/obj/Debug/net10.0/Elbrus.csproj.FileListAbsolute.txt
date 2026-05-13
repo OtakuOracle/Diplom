@@ -213,6 +213,7 @@ C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\canon.jpeg
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\gloves.jpeg
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\goggles.jpeg
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\helmet.jpeg
+C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\no.png
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\radio.jpeg
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\service.jpeg
 C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\skate.jpeg
@@ -399,4 +400,3 @@ C:\Users\Admin\Desktop\Diplom\Elbrus\obj\Debug\net10.0\refint\Elbrus.dll
 C:\Users\Admin\Desktop\Diplom\Elbrus\obj\Debug\net10.0\Elbrus.pdb
 C:\Users\Admin\Desktop\Diplom\Elbrus\obj\Debug\net10.0\Elbrus.genruntimeconfig.cache
 C:\Users\Admin\Desktop\Diplom\Elbrus\obj\Debug\net10.0\ref\Elbrus.dll
-C:\Users\Admin\Desktop\Diplom\Elbrus\bin\Debug\net10.0\inv\no.png
