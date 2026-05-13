@@ -46,47 +46,53 @@ namespace TgBot.Controllers
             return "🎒";
         }
 
+        private async Task SendInventory(long chatId)
+        {
+            var items = await _db.Inventories.ToListAsync();
+
+            var buttons = items
+                .Select(x => InlineKeyboardButton.WithCallbackData(
+                    $"{GetIcon(x.InventoryName)} {x.InventoryName}",
+                    $"inv_{x.InventoryId}"
+                ))
+                .Select(x => new[] { x })
+                .ToList();
+
+            var keyboard = new InlineKeyboardMarkup(buttons);
+
+            await _botClient.SendMessage(
+                chatId,
+                "🎿 Выберите инвентарь:",
+                replyMarkup: keyboard
+            );
+        }
+
         [HttpPost]
         [Consumes("application/json")]
         public async Task<IActionResult> Post([FromBody] Update? update)
         {
-            _logger.LogInformation("Telegram update received");
-
             try
             {
-                // Обработка кнопок
                 if (update?.CallbackQuery != null)
                 {
                     var chatId = update.CallbackQuery.Message.Chat.Id;
                     var data = update.CallbackQuery.Data;
 
+                    if (data == "open_inventory")
+                    {
+                        await SendInventory(chatId);
+                        return Ok();
+                    }
+
                     if (data == "back_inventory")
                     {
-                        var items = await _db.Inventories.ToListAsync();
-
-                        var buttons = items
-                            .Select(x => InlineKeyboardButton.WithCallbackData(
-                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
-                                $"inv_{x.InventoryId}"
-                            ))
-                            .Select(x => new[] { x })
-                            .ToList();
-
-                        var keyboard = new InlineKeyboardMarkup(buttons);
-
-                        await _botClient.SendMessage(
-                            chatId,
-                            "🎿 Выберите инвентарь:",
-                            replyMarkup: keyboard
-                        );
-
+                        await SendInventory(chatId);
                         return Ok();
                     }
 
                     if (data.StartsWith("inv_"))
                     {
                         var id = int.Parse(data.Replace("inv_", ""));
-
                         var item = await _db.Inventories.FindAsync(id);
 
                         if (item != null)
@@ -112,9 +118,9 @@ namespace TgBot.Controllers
                                 replyMarkup: keyboard
                             );
                         }
-                    }
 
-                    return Ok();
+                        return Ok();
+                    }
                 }
 
                 if (update?.Message?.Text == null)
@@ -123,46 +129,22 @@ namespace TgBot.Controllers
                 var chatIdMessage = update.Message.Chat.Id;
                 var text = update.Message.Text;
 
-                _logger.LogInformation($"Message: {text}");
-
                 if (text == "/start")
                 {
+                    var keyboard = new InlineKeyboardMarkup(
+                        InlineKeyboardButton.WithCallbackData(
+                            "🎿 Инвентарь",
+                            "open_inventory"
+                        )
+                    );
+
                     await _botClient.SendMessage(
                         chatIdMessage,
-                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!\n\nВведите /inventory чтобы посмотреть доступный инвентарь."
+                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
+                        replyMarkup: keyboard
                     );
                 }
-                else if (text == "/inventory")
-                {
-                    var items = await _db.Inventories.ToListAsync();
 
-                    if (!items.Any())
-                    {
-                        await _botClient.SendMessage(chatIdMessage, "Инвентарь пока не добавлен.");
-                    }
-                    else
-                    {
-                        var buttons = items
-                            .Select(x => InlineKeyboardButton.WithCallbackData(
-                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
-                                $"inv_{x.InventoryId}"
-                            ))
-                            .Select(x => new[] { x })
-                            .ToArray();
-
-                        var keyboard = new InlineKeyboardMarkup(buttons);
-
-                        await _botClient.SendMessage(
-                            chatIdMessage,
-                            "🎿 Выберите инвентарь:",
-                            replyMarkup: keyboard
-                        );
-                    }
-                }
-                else
-                {
-                    await _botClient.SendMessage(chatIdMessage, $"Вы написали: {text}");
-                }
             }
             catch (Exception ex)
             {
