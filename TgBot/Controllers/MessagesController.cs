@@ -57,7 +57,11 @@ namespace TgBot.Controllers
                 }
                 else if (text == "/inventory")
                 {
+                    var canConnect = await _db.Database.CanConnectAsync();
+                    _logger.LogInformation($"DB connection: {canConnect}");
+
                     var items = await _db.Inventories.ToListAsync();
+
 
                     if (!items.Any())
                     {
@@ -92,5 +96,5 @@ namespace TgBot.Controllers
             return Ok();
         }
 
-
     }
+}
