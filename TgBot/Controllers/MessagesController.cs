@@ -31,6 +31,21 @@ namespace TgBot.Controllers
             return Ok("✅ Контроллер сообщений активен и готов к работе!");
         }
 
+        private string GetIcon(string name)
+        {
+            name = name.ToLower();
+
+            if (name.Contains("лыж")) return "🎿";
+            if (name.Contains("сноуборд")) return "🏂";
+            if (name.Contains("перчат")) return "🧤";
+            if (name.Contains("очк")) return "🥽";
+            if (name.Contains("коньк")) return "⛸";
+            if (name.Contains("шлем")) return "🪖";
+            if (name.Contains("снегоход") || name.Contains("снегокат")) return "🛷";
+
+            return "🎒";
+        }
+
         [HttpPost]
         [Consumes("application/json")]
         public async Task<IActionResult> Post([FromBody] Update? update)
@@ -39,11 +54,34 @@ namespace TgBot.Controllers
 
             try
             {
-                // Обработка нажатий на кнопки
+                // Обработка кнопок
                 if (update?.CallbackQuery != null)
                 {
                     var chatId = update.CallbackQuery.Message.Chat.Id;
                     var data = update.CallbackQuery.Data;
+
+                    if (data == "back_inventory")
+                    {
+                        var items = await _db.Inventories.ToListAsync();
+
+                        var buttons = items
+                            .Select(x => InlineKeyboardButton.WithCallbackData(
+                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
+                                $"inv_{x.InventoryId}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToList();
+
+                        var keyboard = new InlineKeyboardMarkup(buttons);
+
+                        await _botClient.SendMessage(
+                            chatId,
+                            "🎿 Выберите инвентарь:",
+                            replyMarkup: keyboard
+                        );
+
+                        return Ok();
+                    }
 
                     if (data.StartsWith("inv_"))
                     {
@@ -53,13 +91,26 @@ namespace TgBot.Controllers
 
                         if (item != null)
                         {
+                            var icon = GetIcon(item.InventoryName);
+
                             var message =
-                                $"🎿 {item.InventoryName}\n\n" +
+                                $"{icon} {item.InventoryName}\n\n" +
                                 $"Модель: {item.InventoryModel}\n" +
                                 $"Размер: {item.InventorySize}\n" +
                                 $"💰 Цена: {item.RentalCostPerHour} ₽ / час";
 
-                            await _botClient.SendMessage(chatId, message);
+                            var keyboard = new InlineKeyboardMarkup(
+                                InlineKeyboardButton.WithCallbackData(
+                                    "⬅ Назад к списку",
+                                    "back_inventory"
+                                )
+                            );
+
+                            await _botClient.SendMessage(
+                                chatId,
+                                message,
+                                replyMarkup: keyboard
+                            );
                         }
                     }
 
@@ -93,7 +144,7 @@ namespace TgBot.Controllers
                     {
                         var buttons = items
                             .Select(x => InlineKeyboardButton.WithCallbackData(
-                                x.InventoryName,
+                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
                                 $"inv_{x.InventoryId}"
                             ))
                             .Select(x => new[] { x })
