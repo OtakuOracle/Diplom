@@ -220,7 +220,7 @@ namespace TgBot.Controllers
                 var chatIdMessage = update.Message.Chat.Id;
                 var text = update.Message.Text;
 
-                if (text == "/start")
+                if (text == "/start") //Проверка
                 {
                     var keyboard = new InlineKeyboardMarkup(new[]
                     {
