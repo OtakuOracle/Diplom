@@ -35,16 +35,32 @@ namespace TgBot.Controllers
         {
             name = name.ToLower();
 
-            if (name.Contains("лыжи")) return "🎿";
+            if (name.Contains("лыж")) return "🎿";
             if (name.Contains("сноуборд")) return "🏂";
-            if (name.Contains("перчатки")) return "🧤";
-            if (name.Contains("очки")) return "🥽";
+            if (name.Contains("перчат")) return "🧤";
+            if (name.Contains("очк")) return "🥽";
             if (name.Contains("коньк")) return "⛸";
             if (name.Contains("шлем")) return "🪖";
             if (name.Contains("снегоход") || name.Contains("снегокат")) return "🛷";
 
+            if (name.Contains("урок") || name.Contains("обучен") || name.Contains("инструктор"))
+                return "🧑🏫";
+
+            if (name.Contains("экскурс"))
+                return "🏔";
+
+            if (name.Contains("гид"))
+                return "🧭";
+
+            if (name.Contains("сервис") || name.Contains("ремонт"))
+                return "🛠";
+
+            if (name.Contains("аренда"))
+                return "📦";
+
             return "🎒";
         }
+
 
         private async Task SendInventory(long chatId)
         {
@@ -66,6 +82,30 @@ namespace TgBot.Controllers
                 replyMarkup: keyboard
             );
         }
+
+        private async Task SendServices(long chatId, int messageId)
+        {
+            var services = await _db.Services.ToListAsync();
+
+            var buttons = services
+                .Select(x => InlineKeyboardButton.WithCallbackData(
+                    $"{GetIcon(x.ServiceName)} {x.ServiceName}",
+                    $"srv_{x.ServiceId}"
+                ))
+                .Select(x => new[] { x })
+                .ToArray();
+
+            var keyboard = new InlineKeyboardMarkup(buttons);
+
+            await _botClient.EditMessageText(
+                chatId,
+                messageId,
+                "🧑🏫 Выберите услугу:",
+                replyMarkup: keyboard
+            );
+        }
+
+
 
         [HttpPost]
         [Consumes("application/json")]
@@ -103,6 +143,12 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
+                    if (data == "open_services")
+                    {
+                        await SendServices(chatId, messageId);
+                        return Ok();
+                    }
+
                     if (data.StartsWith("inv_"))
                     {
                         var id = int.Parse(data.Replace("inv_", ""));
@@ -135,6 +181,37 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
+
+                    if (data.StartsWith("srv_"))
+                    {
+                        var id = int.Parse(data.Replace("srv_", ""));
+                        var service = await _db.Services.FindAsync(id);
+
+                        if (service != null)
+                        {
+                            var icon = GetIcon(service.ServiceName);
+
+                            var message =
+                                $"{icon} {service.ServiceName}\n\n" +
+                                $"💰 Цена: {service.CostPerHour} ₽ / час";
+
+                            var keyboard = new InlineKeyboardMarkup(
+                                InlineKeyboardButton.WithCallbackData(
+                                    "⬅️ Назад к услугам",
+                                    "open_services"
+                                )
+                            );
+
+                            await _botClient.EditMessageText(
+                                chatId,
+                                messageId,
+                                message,
+                                replyMarkup: keyboard
+                            );
+                        }
+
+                        return Ok();
+                    }
                 }
 
                 if (update?.Message?.Text == null)
@@ -145,12 +222,17 @@ namespace TgBot.Controllers
 
                 if (text == "/start")
                 {
-                    var keyboard = new InlineKeyboardMarkup(
-                        InlineKeyboardButton.WithCallbackData(
-                            "🎿 Инвентарь",
-                            "open_inventory"
-                        )
-                    );
+                    var keyboard = new InlineKeyboardMarkup(new[]
+                    {
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
+                },
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
+                }
+            });
 
                     await _botClient.SendMessage(
                         chatIdMessage,
@@ -166,6 +248,5 @@ namespace TgBot.Controllers
 
             return Ok();
         }
-
     }
 }

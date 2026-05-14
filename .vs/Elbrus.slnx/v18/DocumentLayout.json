@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\Admin\\Desktop\\Diplom\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|c:\\users\\admin\\desktop\\diplom\\tgbot\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|solutionrelative:tgbot\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\models\\service.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\models\\service.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|c:\\users\\admin\\desktop\\diplom\\tgbot\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|solutionrelative:tgbot\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -17,10 +25,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\employeewindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
       "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\employeewindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|c:\\users\\admin\\desktop\\diplom\\tgbot\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|solutionrelative:tgbot\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\elbrus.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -48,45 +52,19 @@
         },
         {
           "DockedWidth": 380,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "EmployeeWindow.axaml.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml.cs",
-              "RelativeDocumentMoniker": "Elbrus\\EmployeeWindow.axaml.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml.cs",
-              "RelativeToolTip": "Elbrus\\EmployeeWindow.axaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAfAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "Service.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Models\\Service.cs",
+              "RelativeDocumentMoniker": "Elbrus\\Models\\Service.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Models\\Service.cs",
+              "RelativeToolTip": "Elbrus\\Models\\Service.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T18:39:05.597Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "EmployeeWindow.axaml",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml",
-              "RelativeDocumentMoniker": "Elbrus\\EmployeeWindow.axaml",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml",
-              "RelativeToolTip": "Elbrus\\EmployeeWindow.axaml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-05-13T18:39:01.665Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Elbrus",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
-              "RelativeDocumentMoniker": "Elbrus\\Elbrus.csproj",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
-              "RelativeToolTip": "Elbrus\\Elbrus.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-05-13T18:14:52.19Z",
+              "WhenOpened": "2026-05-14T06:29:37.262Z",
               "EditorCaption": ""
             },
             {
@@ -99,7 +77,43 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "EmployeeWindow.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml.cs",
+              "RelativeDocumentMoniker": "Elbrus\\EmployeeWindow.axaml.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml.cs",
+              "RelativeToolTip": "Elbrus\\EmployeeWindow.axaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T18:39:05.597Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "EmployeeWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml",
+              "RelativeDocumentMoniker": "Elbrus\\EmployeeWindow.axaml",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\EmployeeWindow.axaml",
+              "RelativeToolTip": "Elbrus\\EmployeeWindow.axaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-05-13T18:39:01.665Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 6,
+              "Title": "Elbrus.csproj",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
+              "RelativeDocumentMoniker": "Elbrus\\Elbrus.csproj",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Elbrus.csproj",
+              "RelativeToolTip": "Elbrus\\Elbrus.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-05-13T18:14:52.19Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "DiplomContext.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Models\\DiplomContext.cs",
               "RelativeDocumentMoniker": "Elbrus\\Models\\DiplomContext.cs",
@@ -107,12 +121,11 @@
               "RelativeToolTip": "Elbrus\\Models\\DiplomContext.cs",
               "ViewState": "AgIAAHIAAAAAAAAAAAAuwH0AAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T17:00:25.847Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T17:00:25.847Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Program.cs",
               "RelativeDocumentMoniker": "TgBot\\Program.cs",
@@ -120,12 +133,11 @@
               "RelativeToolTip": "TgBot\\Program.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAIwDQAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-08T08:54:14.499Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-08T08:54:14.499Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\appsettings.json",
               "RelativeDocumentMoniker": "TgBot\\appsettings.json",
@@ -138,13 +150,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "MessagesController.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeDocumentMoniker": "TgBot\\Controllers\\MessagesController.cs",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAOQAAAAAAAAAAAAAANcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-08T08:52:57.911Z",
               "EditorCaption": ""
