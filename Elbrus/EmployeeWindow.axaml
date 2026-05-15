@@ -50,17 +50,30 @@
 					</StackPanel>
 				</StackPanel>
 
-				<StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0">
+				<StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0" Spacing="10">
+
 					<Button Click="CreateOrderClick"
-                            Width="160" Height="40"
-                            CornerRadius="10"
-                            Background="#00FF00" 
-                            Padding="10,0">
+							Width="160" Height="40"
+							CornerRadius="10"
+							Background="#00FF00"
+							Padding="10,0">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<TextBlock Text="Создать заказ" VerticalAlignment="Center" FontWeight="SemiBold"/>
 						</StackPanel>
 					</Button>
+
+					<Button Click="AllOrderButton_OnClick"
+							Width="160" Height="40"
+							CornerRadius="10"
+							Background="#3FA9F5"
+							Padding="10,0">
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock Text="Мои заказы" VerticalAlignment="Center" FontWeight="SemiBold"/>
+						</StackPanel>
+					</Button>
+
 				</StackPanel>
+
 			</Grid>
 		</Border>
 

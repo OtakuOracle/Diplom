@@ -220,4 +220,12 @@ public partial class AdminWindow : Window
     }
 
 
+    private void AllOrderButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var allorderWindow = new AllOrderWindow();
+        allorderWindow.Show();
+
+    }
+
+
 }

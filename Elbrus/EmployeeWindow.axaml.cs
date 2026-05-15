@@ -10,11 +10,12 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Elbrus.Helpers;
 using Elbrus.Models;
 using Microsoft.EntityFrameworkCore;
-using ReactiveUI;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+using ReactiveUI;
 
 namespace Elbrus;
 
@@ -363,5 +364,13 @@ public partial class EmployeeWindow : Window
         mainWindow.Show();
         this.Close();
     }
+
+    private void AllOrderButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var allorderWindow = new AllOrderWindow(CurrentUser.EmployeeId);
+        allorderWindow.Show();
+
+    }
+
 }
 

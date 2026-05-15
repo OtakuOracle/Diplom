@@ -49,18 +49,31 @@
 						<TextBlock x:Name="SessionWarningText" Foreground="Red" FontSize="10" Margin="0,5,0,0"/>
 					</StackPanel>
 				</StackPanel>
-				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-					<Button Content="Посмотреть инвентарь"
-                            x:Name="InventoryButton"
-                            Height="30"
-                            HorizontalAlignment="Right"
+
+				<StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="10">
+					<Button Click="InventoryButton_OnClick"
+							Width="160" Height="40"
+							CornerRadius="10"
 							Background="#00FF00"
-                            Click="InventoryButton_OnClick" />
+							Padding="10,0">
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock Text="Инвентарь" VerticalAlignment="Center" FontWeight="SemiBold"/>
+						</StackPanel>
+					</Button>
+					<Button Click="AllOrderButton_OnClick"
+							Width="160" Height="40"
+							CornerRadius="10"
+							Background="#3FA9F5"
+							Padding="10,0">
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock Text="Все заказы" VerticalAlignment="Center" FontWeight="SemiBold"/>
+						</StackPanel>
+					</Button>
 				</StackPanel>
 			</Grid>
 		</Border>
 
-
+		
 
 		<Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="700">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" VerticalAlignment="Top" Margin="0,0,0,10">

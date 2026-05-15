@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:CompileBindings="False"
+        x:Class="Elbrus.AllOrderWindow"
+        Title="Список заказов"
+        Icon="Icon/icon.png">
+
+  <Window.Background>
+    <ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
+  </Window.Background>
+
+  <Grid RowDefinitions="Auto,*">
+
+    <!-- Кнопка назад -->
+    <Button Content="Назад"
+            Width="100"
+            Height="35"
+            Margin="10"
+            HorizontalAlignment="Left"
+			Background="#3FA9F5"
+            Click="Back_Click"/>
+
+    <!-- Список заказов -->
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Orders}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+
+            <Border Margin="10"
+                    Padding="15"
+                    CornerRadius="10"
+                    Background="#F5F5F5"
+                    BorderBrush="#D0D0D0"
+                    BorderThickness="1">
+
+              <Grid ColumnDefinitions="6,*">
+
+                <!-- Голубая полоска -->
+                <Border Background="#3FA9F5" CornerRadius="10,0,0,10"/>
+
+                <!-- Содержимое -->
+                <StackPanel Grid.Column="1" Spacing="6" Margin="10,0,0,0">
+
+                  <TextBlock Text="{Binding Client, StringFormat=Клиент: {0}}"
+                             FontSize="16"
+                             FontWeight="Bold"/>
+
+                  <TextBlock Text="{Binding Employee, StringFormat=Сотрудник: {0}}"/>
+                  <TextBlock Text="{Binding Service, StringFormat=Услуга: {0}}"/>
+                  <TextBlock Text="{Binding Inventory, StringFormat=Инвентарь: {0}}"/>
+
+                  <StackPanel Orientation="Horizontal" Spacing="20">
+                    <TextBlock Text="{Binding TotalPrice, StringFormat=Цена: {0} ₽}"/>
+                    <TextBlock Text="{Binding Date, StringFormat=Дата: {0}}"/>
+                  </StackPanel>
+
+                  <StackPanel Orientation="Horizontal" Spacing="20">
+                    <TextBlock Text="{Binding TimeStart, StringFormat=Начало: {0}}"/>
+                    <TextBlock Text="{Binding TimeEnd, StringFormat=Конец: {0}}"/>
+                  </StackPanel>
+
+                </StackPanel>
+
+              </Grid>
+
+            </Border>
+
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </Grid>
+</Window>
