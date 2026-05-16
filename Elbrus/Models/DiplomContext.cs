@@ -37,6 +37,8 @@ public partial class DiplomContext : DbContext
 
     public virtual DbSet<Service> Services { get; set; }
 
+    public virtual DbSet<InventoryItem> InventoryItems { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseNpgsql("Host=213.171.24.157; Port=5432; Username=nastya; Database=diplom; Password=123");
@@ -130,29 +132,53 @@ public partial class DiplomContext : DbContext
             entity.ToTable("inventory");
 
             entity.Property(e => e.InventoryId).HasColumnName("inventory_id");
-            entity.Property(e => e.InventoryModel)
-                .HasColumnType("character varying")
-                .HasColumnName("inventory_model");
+
             entity.Property(e => e.InventoryName)
                 .HasColumnType("character varying")
                 .HasColumnName("inventory_name");
-            entity.Property(e => e.InventoryNumber)
+
+            entity.Property(e => e.InventoryModel)
                 .HasColumnType("character varying")
-                .HasColumnName("inventory_number");
-            entity.Property(e => e.InventorySize)
-                .HasColumnType("character varying")
-                .HasColumnName("inventory_size");
-            entity.Property(e => e.InventoryStatusId).HasColumnName("inventory_status_id");
+                .HasColumnName("inventory_model");
+
+            entity.Property(e => e.RentalCostPerHour)
+                .HasColumnName("rental_cost_per_hour");
+
             entity.Property(e => e.Photo)
                 .HasColumnType("character varying")
                 .HasColumnName("photo");
-            entity.Property(e => e.RentalCostPerHour).HasColumnName("rental_cost_per_hour");
-
-            entity.HasOne(d => d.InventoryStatus).WithMany(p => p.Inventories)
-                .HasForeignKey(d => d.InventoryStatusId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("inventory_inventory_status_id_fkey");
         });
+
+        modelBuilder.Entity<InventoryItem>(entity =>
+        {
+            entity.HasKey(e => e.InventoryItemId).HasName("inventory_item_pkey");
+
+            entity.ToTable("inventory_item");
+
+            entity.Property(e => e.InventoryItemId).HasColumnName("inventory_item_id");
+
+            entity.Property(e => e.InventoryId)
+                .HasColumnName("inventory_id");
+
+            entity.Property(e => e.InventoryNumber)
+                .HasColumnType("character varying")
+                .HasColumnName("inventory_number");
+
+            entity.Property(e => e.Size)
+                .HasColumnType("character varying")
+                .HasColumnName("size");
+
+            entity.Property(e => e.InventoryStatusId)
+                .HasColumnName("inventory_status_id");
+
+            entity.HasOne(d => d.Inventory)
+                .WithMany(p => p.InventoryItems)
+                .HasForeignKey(d => d.InventoryId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("inventory_item_inventory_id_fkey");
+        });
+
+
 
         modelBuilder.Entity<InventoryStatus>(entity =>
         {
@@ -200,20 +226,29 @@ public partial class DiplomContext : DbContext
             entity.ToTable("order_inventory");
 
             entity.Property(e => e.OrderInventoryId).HasColumnName("order_inventory_id");
-            entity.Property(e => e.InventoryId).HasColumnName("inventory_id");
-            entity.Property(e => e.OrderServiceId).HasColumnName("order_service_id");
-            entity.Property(e => e.RentTime).HasColumnName("rent_time");
 
-            entity.HasOne(d => d.Inventory).WithMany(p => p.OrderInventories)
-                .HasForeignKey(d => d.InventoryId)
+            entity.Property(e => e.OrderServiceId)
+                .HasColumnName("order_service_id");
+
+            entity.Property(e => e.InventoryItemId)
+                .HasColumnName("inventory_item_id");
+
+            entity.Property(e => e.RentTime)
+                .HasColumnName("rent_time");
+
+            entity.HasOne(d => d.InventoryItem)
+                .WithMany(p => p.OrderInventories)
+                .HasForeignKey(d => d.InventoryItemId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("order_inventory_inventory_id_fkey");
+                .HasConstraintName("order_inventory_inventory_item_id_fkey");
 
-            entity.HasOne(d => d.OrderService).WithMany(p => p.OrderInventories)
+            entity.HasOne(d => d.OrderService)
+                .WithMany(p => p.OrderInventories)
                 .HasForeignKey(d => d.OrderServiceId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("order_inventory_order_service_id_fkey");
         });
+
 
         modelBuilder.Entity<OrderService>(entity =>
         {

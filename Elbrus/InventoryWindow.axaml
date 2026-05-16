@@ -13,58 +13,141 @@
 	</Window.Background>
 
 	<DockPanel>
+
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="5">
-			<TextBox Watermark="Поиск" Width="200" Margin="5" Name="SearchBox" KeyUp="SearchBox_KeyUp"></TextBox>
-			
-			<ComboBox Margin="5" Width="200" Name="Sort" SelectionChanged="Sort_SelectionChanged">
+
+			<TextBox Watermark="Поиск"
+					 Width="200"
+					 Margin="5"
+					 Name="SearchBox"
+					 KeyUp="SearchBox_KeyUp"/>
+
+			<ComboBox Margin="5"
+					  Width="200"
+					  Name="Sort"
+					  SelectionChanged="Sort_SelectionChanged">
 				<ComboBoxItem>по возрастанию цены</ComboBoxItem>
 				<ComboBoxItem>по убыванию цены</ComboBoxItem>
 			</ComboBox>
 
-			<ComboBox Margin="5" Width="200" Name="Filter" SelectionChanged="Filter_SelectionChanged"></ComboBox>
+			<ComboBox Margin="5"
+					  Width="200"
+					  Name="Filter"
+					  SelectionChanged="Filter_SelectionChanged"/>
+
 		</StackPanel>
-		
-		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
-			<Button Content="Назад" Margin="5" Background="#696969" Click="Back_Click"></Button>
-			<Button Content="Добавить инвентарь" Margin="5" Background="#00FF00" Click="Add_Click" Name="AddButton"></Button>
+
+
+		<StackPanel DockPanel.Dock="Bottom"
+					Orientation="Horizontal"
+					HorizontalAlignment="Center">
+
+			<Button Content="Назад"
+					Margin="5"
+					Background="#696969"
+					Click="Back_Click"/>
+
+			<Button Content="Добавить инвентарь"
+					Margin="5"
+					Background="#00FF00"
+					Click="Add_Click"
+					Name="AddButton"/>
+
 		</StackPanel>
-		<ListBox Name="InventoriesBox" SelectionChanged="InventoriesBox_SelectionChanged" Background="Transparent">
+
+
+		<ListBox Name="InventoriesBox"
+				 SelectionChanged="InventoriesBox_SelectionChanged"
+				 Background="Transparent">
+
 			<ListBox.ItemsPanel>
 				<ItemsPanelTemplate>
-					<UniformGrid Columns="1"></UniformGrid>
+					<UniformGrid Columns="1"/>
 				</ItemsPanelTemplate>
 			</ListBox.ItemsPanel>
+
+
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Border BorderBrush="Black" BorderThickness="1" Background="Transparent">
+
+					<Border BorderBrush="Black"
+							BorderThickness="1"
+							Background="Transparent">
+
 						<DockPanel>
-							<Border BorderBrush="Black" BorderThickness="1" Margin="5" DockPanel.Dock="Left" Background="Transparent">
-								<StackPanel  Orientation="Vertical" VerticalAlignment="Center">
-									<Image Height="80" Width="80 " Margin="5" Source="{Binding GetPhoto}"></Image>
+
+							<Border BorderBrush="Black"
+									BorderThickness="1"
+									Margin="5"
+									DockPanel.Dock="Left"
+									Background="Transparent">
+
+								<StackPanel Orientation="Vertical"
+											VerticalAlignment="Center">
+
+									<Image Height="80"
+										   Width="80"
+										   Margin="5"
+										   Source="{Binding GetPhoto}"/>
+
 								</StackPanel>
+
 							</Border>
 
-							<Border BorderBrush="Black" BorderThickness="1" Margin="5" DockPanel.Dock="Right" Background="Transparent">
-								<StackPanel  Orientation="Vertical" VerticalAlignment="Center">
-									<TextBlock Text="{Binding RentalCostPerHour,StringFormat='Цена за час:{0}'}" Margin="5"/>
+
+							<Border BorderBrush="Black"
+									BorderThickness="1"
+									Margin="5"
+									DockPanel.Dock="Right"
+									Background="Transparent">
+
+								<StackPanel Orientation="Vertical"
+											VerticalAlignment="Center">
+
+									<TextBlock Text="{Binding RentalCostPerHour, StringFormat='Цена за час: {0}'}"
+											   Margin="5"/>
+
 								</StackPanel>
+
 							</Border>
-							
-							<Border BorderBrush="Black" BorderThickness="1" Margin="5" Background="Transparent">
-								<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center">
-									<TextBlock Text="{Binding InventoryName,StringFormat='Название:{0}'}" Margin="5"/>
-									<TextBlock Text="{Binding InventoryNumber,StringFormat='Код:{0}'}" Margin="5"/>
-									<TextBlock Text="{Binding InventoryModel,StringFormat='Модель:{0}'}" Margin="5"/>
-									<TextBlock Text="{Binding InventorySize,StringFormat='Размер:{0}'}" Margin="5"/>
-									<TextBlock Text="{Binding InventoryStatus.InventoryStatusName,StringFormat='Статус:{0}'}" Margin="5"/>
+
+
+							<Border BorderBrush="Black"
+									BorderThickness="1"
+									Margin="5"
+									Background="Transparent">
+
+								<StackPanel Orientation="Vertical"
+											HorizontalAlignment="Left"
+											VerticalAlignment="Center">
+
+									<TextBlock Text="{Binding InventoryName, StringFormat='Название: {0}'}"
+											   Margin="5"/>
+
+									<TextBlock Text="{Binding InventoryItems[0].InventoryNumber, StringFormat='Код: {0}'}"
+											   Margin="5"/>
+
+									<TextBlock Text="{Binding InventoryModel, StringFormat='Модель: {0}'}"
+											   Margin="5"/>
+
+									<TextBlock Text="{Binding InventoryItems[0].Size, StringFormat='Размер: {0}'}"
+											   Margin="5"/>
+
+									<TextBlock Text="{Binding InventoryItems[0].InventoryStatus.InventoryStatusName, StringFormat='Статус: {0}'}"
+											   Margin="5"/>
+
 								</StackPanel>
+
 							</Border>
+
 						</DockPanel>
+
 					</Border>
+
 				</DataTemplate>
 			</ListBox.ItemTemplate>
+
 		</ListBox>
 
 	</DockPanel>
-
 </Window>

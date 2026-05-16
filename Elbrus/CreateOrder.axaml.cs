@@ -25,6 +25,8 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
     public ObservableCollection<ServiceWithTime> BasketServices { get; } = new();
     public ObservableCollection<Inventory> InventoryList { get; } = new();
     public ObservableCollection<InventoryWithTime> BasketInventory { get; } = new();
+    public ObservableCollection<InventoryItem> InventoryItemList { get; } = new();
+
 
     public string TimeInText { get; set; } = string.Empty;
     public string TimeOutText { get; set; } = string.Empty;
@@ -35,8 +37,34 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
     public Inventory ChosenInventory
     {
         get => _chosenInventory;
-        set => this.RaiseAndSetIfChanged(ref _chosenInventory, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _chosenInventory, value);
+
+            if (value != null)
+            {
+                InventoryItemList.Clear();
+
+                var items = _context.InventoryItems
+                    .Where(i => i.InventoryId == value.InventoryId)
+                    .ToList();
+
+                foreach (var item in items)
+                    InventoryItemList.Add(item);
+            }
+        }
     }
+
+
+
+    private InventoryItem _chosenInventoryItem;
+    public InventoryItem ChosenInventoryItem
+    {
+        get => _chosenInventoryItem;
+        set => this.RaiseAndSetIfChanged(ref _chosenInventoryItem, value);
+    }
+
+
 
     private Client _chosenClient;
     public Client ChosenClient
@@ -65,6 +93,9 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
         get => _inventoryHourSelected;
         set => this.RaiseAndSetIfChanged(ref _inventoryHourSelected, value);
     }
+
+
+
 
     public event PropertyChangedEventHandler PropertyChanged;
     public event PropertyChangingEventHandler PropertyChanging;
@@ -115,10 +146,13 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
 
     public class InventoryWithTime : Inventory
     {
+        public int InventoryItemId { get; set; }
+        public string Size { get; set; }
         public int TimeInHourInv { get; set; } = 1;
         public string CurrentStatus { get; set; } = "Новый инвентарь";
         public int ItemTotalPrice { get; set; } = 0;
     }
+
     private async void AddServiceClick(object sender, RoutedEventArgs e)
     {
         if (ChosenService != null && HourSelected > 0)
@@ -153,27 +187,34 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
 
     private async void AddInventoryClick(object sender, RoutedEventArgs e)
     {
-        if (ChosenInventory != null && InventoryHourSelected > 0)
+        if (ChosenInventoryItem != null && InventoryHourSelected > 0)
         {
-            if (BasketInventory.All(inv => inv.InventoryId != ChosenInventory.InventoryId))
+            if (BasketInventory.All(i => i.InventoryItemId != ChosenInventoryItem.InventoryItemId))
             {
                 BasketInventory.Add(new InventoryWithTime
                 {
+                    InventoryItemId = ChosenInventoryItem.InventoryItemId,
                     InventoryId = ChosenInventory.InventoryId,
                     InventoryName = ChosenInventory.InventoryName,
                     RentalCostPerHour = ChosenInventory.RentalCostPerHour,
+                    Size = ChosenInventoryItem.Size,
                     TimeInHourInv = InventoryHourSelected,
                     CurrentStatus = "Новый инвентарь"
                 });
             }
             else
             {
-                var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Этот инвентарь уже добавлен", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var error = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Этот размер уже добавлен",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await error.ShowAsync();
             }
         }
-
     }
+
 
     private void RemoveInventoryClick(object sender, RoutedEventArgs e)
     {
@@ -185,48 +226,6 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
 
     private async void CompleteOrderClick(object sender, RoutedEventArgs e)
     {
-        if (ChosenClient == null)
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Добавьте клиента", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-            return;
-        }
-
-        if (BasketServices.Count == 0 && BasketInventory.Count == 0)
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Добавьте услугу", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-            return;
-        }
-
-        if (!DateOrderPicker.SelectedDate.HasValue)
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Добавьте дату", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-            return;
-        }
-
-
-        if (!TimeInOrderPicker.SelectedTime.HasValue ||
-            !TimeOutOrderPicker.SelectedTime.HasValue)
-           
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Добавьте время начала", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-            return;
-        }
-
-        if ( !TimeOutOrderPicker.SelectedTime.HasValue)
-
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Добавьте время окончания", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-            return;
-        }
-
-
-
-
         try
         {
             string generatedOrderNum = $"{new Random().Next(100, 999)}";
@@ -317,7 +316,6 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
             foreach (var inv in BasketInventory)
             {
 
-
                 int? targetOrderServiceId = null;
                 if (ChosenInventory != null && ChosenInventory.InventoryId == inv.InventoryId)
                 {
@@ -343,11 +341,11 @@ public partial class CreateOrder : Window, INotifyPropertyChanged, IReactiveObje
                 {
                     var newOrderInventory = new OrderInventory
                     {
-                        InventoryId = inv.InventoryId,
+                        InventoryItemId = inv.InventoryItemId,
                         OrderServiceId = targetOrderServiceId.Value,
                         RentTime = inv.TimeInHourInv
-
                     };
+
                     orderInventoriesToAdd.Add(newOrderInventory);
                 }
             }

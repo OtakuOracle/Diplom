@@ -9,5 +9,5 @@ public partial class InventoryStatus
 
     public string? InventoryStatusName { get; set; }
 
-    public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
+    public virtual ICollection<InventoryItem> InventoryItems { get; set; } = new List<InventoryItem>();
 }

@@ -30,24 +30,39 @@
                       PlaceholderText="Нажмите, чтобы выбрать клиента..."/>
 
 			<TextBlock Text="Выберите инвентарь и укажите время использования" FontWeight="Bold" FontSize="16"/>
-			<StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-				<ComboBox x:Name="InventoryComboBox"
-                          ItemsSource="{Binding InventoryList}"
-                          SelectedItem="{Binding ChosenInventory}"
-                          DisplayMemberBinding="{Binding InventoryName}"
-                          Width="300"
-                          PlaceholderText="Выберите инвентарь..."/>
-				<TextBox x:Name="TimeInInventoryBox"
-                         Width="100"
-                         Watermark="Час."
-                         Text="{Binding InventoryHourSelected}"
-                         FontSize="14"/>
-				<Button Content="Добавить"
+
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+
+                <!-- Инвентарь -->
+                <ComboBox
+                    ItemsSource="{Binding InventoryList}"
+                    SelectedItem="{Binding ChosenInventory}"
+                    DisplayMemberBinding="{Binding InventoryName}"
+                    Width="220"
+                    PlaceholderText="Инвентарь"/>
+
+                <!-- Размер -->
+                <ComboBox
+                    ItemsSource="{Binding InventoryItemList}"
+                    SelectedItem="{Binding ChosenInventoryItem}"
+                    DisplayMemberBinding="{Binding Size}"
+                    Width="120"
+                    PlaceholderText="Размер"/>
+
+                <!-- Время -->
+                <TextBox
+                    Width="100"
+                    Watermark="Час."
+                    Text="{Binding InventoryHourSelected}"/>
+
+                <Button Content="Добавить"
                         Click="AddInventoryClick"
                         Padding="10,5"
                         Background="#4448C1"
                         Foreground="White"/>
-			</StackPanel>
+
+            </StackPanel>
+
 
 			<StackPanel Spacing="10" Margin="0,15,0,0">
 

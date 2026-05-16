@@ -10,11 +10,7 @@ public partial class Inventory
 
     public string? InventoryName { get; set; }
 
-    public string? InventoryNumber { get; set; }
-
     public string? InventoryModel { get; set; }
-
-    public string? InventorySize { get; set; }
 
     public int? RentalCostPerHour { get; set; }
 
@@ -24,7 +20,7 @@ public partial class Inventory
     {
         get
         {
-            if (Photo != null && Photo != "")
+            if (!string.IsNullOrEmpty(Photo))
             {
                 return new Bitmap(AppDomain.CurrentDomain.BaseDirectory + "/" + Photo);
             }
@@ -35,9 +31,5 @@ public partial class Inventory
         }
     }
 
-    public int? InventoryStatusId { get; set; }
-
-    public virtual InventoryStatus? InventoryStatus { get; set; }
-
-    public virtual ICollection<OrderInventory> OrderInventories { get; set; } = new List<OrderInventory>();
+    public virtual ICollection<InventoryItem> InventoryItems { get; set; } = new List<InventoryItem>();
 }

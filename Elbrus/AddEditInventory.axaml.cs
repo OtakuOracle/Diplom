@@ -94,68 +94,82 @@ public partial class AddEditInventory : Window
             if (newInventory == null)
             {
                 newInventory = new Inventory();
-                DataContext = newInventory; 
+                DataContext = newInventory;
             }
 
             if (string.IsNullOrWhiteSpace(newInventory.InventoryName) ||
-                string.IsNullOrWhiteSpace(newInventory.InventoryNumber) ||
                 string.IsNullOrWhiteSpace(newInventory.InventoryModel) ||
-                string.IsNullOrWhiteSpace(newInventory.InventorySize) ||
                 newInventory.RentalCostPerHour == null)
-                {
-                    var validationError = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Все поля должны быть заполнены", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-                    await validationError.ShowAsync();
-                    return;
-                }
-
-            if (!ValidateInventory(newInventory))
             {
+                var validationError = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Все поля должны быть заполнены",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
+                await validationError.ShowAsync();
                 return;
             }
+
+            if (!ValidateInventory(newInventory))
+                return;
 
             var selectedStatusObject = InventoryStatus.SelectedItem as InventoryStatus;
 
             if (selectedStatusObject == null)
             {
-                var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Пожалуйста, выберите статус инвентаря", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var error = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Пожалуйста, выберите статус инвентаря",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await error.ShowAsync();
                 return;
             }
 
-            newInventory.InventoryStatusId = selectedStatusObject.InventoryStatusId;
-
-
             if (!string.IsNullOrEmpty(ImageName))
-            {
                 newInventory.Photo = "inv/" + ImageName;
-            }
             else
-            {
                 newInventory.Photo = null;
-            }
+
             context.Inventories.Add(newInventory);
             await context.SaveChangesAsync();
 
-            var nice = MessageBoxManager.GetMessageBoxStandard("Успех", "Инвентарь создан", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+            var newItem = new InventoryItem
+            {
+                InventoryId = newInventory.InventoryId,
+                InventoryNumber = InventoryNumberBox.Text,
+                Size = InventorySizeBox.Text,
+                InventoryStatusId = selectedStatusObject.InventoryStatusId
+            };
+
+            context.InventoryItems.Add(newItem);
+            await context.SaveChangesAsync();
+
+            var nice = MessageBoxManager.GetMessageBoxStandard(
+                "Успех",
+                "Инвентарь создан",
+                MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                MsBox.Avalonia.Enums.Icon.Success);
+
             await nice.ShowAsync();
 
             var inventoryWindow = new InventoryWindow();
             inventoryWindow.Show();
             this.Close();
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException is Npgsql.NpgsqlException pgEx && pgEx.Message.Contains("duplicate key"))
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
         {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Инвентарь уже существует", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
-        }
-        catch (Exception ex)
-        {
-            var excep = ex.ToString();
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", excep, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+            var error = MessageBoxManager.GetMessageBoxStandard(
+                "Ошибка",
+                ex.InnerException?.Message ?? ex.Message,
+                MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                MsBox.Avalonia.Enums.Icon.Error);
+
             await error.ShowAsync();
         }
     }
-
 
 
 
@@ -248,9 +262,12 @@ public partial class AddEditInventory : Window
 
         InventoryStatus.ItemsSource = allStatuses;
 
-        if (_inventory != null && _inventory.InventoryStatusId != 0)
+        var item = context.InventoryItems.FirstOrDefault(x => x.InventoryId == _inventory.InventoryId);
+
+        if (item != null && item.InventoryStatusId != null)
         {
-            InventoryStatus.SelectedItem = allStatuses.FirstOrDefault(x => x.InventoryStatusId == _inventory.InventoryStatusId);
+            InventoryStatus.SelectedItem = allStatuses
+                .FirstOrDefault(x => x.InventoryStatusId == item.InventoryStatusId);
         }
     }
 
@@ -265,88 +282,109 @@ public partial class AddEditInventory : Window
 
             if (inventoryToUpdate == null)
             {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Не удалось получить данные инвентаря", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Не удалось получить данные инвентаря",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await errorMessage.ShowAsync();
                 return;
             }
 
             var attachedInventory = await context.Inventories.FindAsync(inventoryToUpdate.InventoryId);
+
             if (attachedInventory == null)
             {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Запись инвентаря не найдена", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Запись инвентаря не найдена",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
+                await errorMessage.ShowAsync();
+                return;
+            }
+
+            var inventoryItem = context.InventoryItems
+                .FirstOrDefault(x => x.InventoryId == inventoryToUpdate.InventoryId);
+
+            if (inventoryItem == null)
+            {
+                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Экземпляр инвентаря не найден",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await errorMessage.ShowAsync();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(inventoryToUpdate.InventoryName) ||
-                string.IsNullOrWhiteSpace(inventoryToUpdate.InventoryNumber) ||
                 string.IsNullOrWhiteSpace(inventoryToUpdate.InventoryModel) ||
-                string.IsNullOrWhiteSpace(inventoryToUpdate.InventorySize) ||
                 inventoryToUpdate.RentalCostPerHour == null)
             {
-                var validationError = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Все поля должны быть заполнены", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var validationError = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Все поля должны быть заполнены",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await validationError.ShowAsync();
                 return;
             }
 
-            attachedInventory.InventoryName = inventoryToUpdate.InventoryName; 
-            attachedInventory.InventoryNumber = inventoryToUpdate.InventoryNumber;
+            attachedInventory.InventoryName = inventoryToUpdate.InventoryName;
             attachedInventory.InventoryModel = inventoryToUpdate.InventoryModel;
-            attachedInventory.InventorySize = inventoryToUpdate.InventorySize;
             attachedInventory.RentalCostPerHour = inventoryToUpdate.RentalCostPerHour;
 
+            inventoryItem.InventoryNumber = InventoryNumberBox.Text;
+            inventoryItem.Size = InventorySizeBox.Text;
 
             var selectedStatusObject = InventoryStatus.SelectedItem as InventoryStatus;
+
             if (selectedStatusObject == null)
             {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Не выбран статус", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Не выбран статус",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error);
+
                 await errorMessage.ShowAsync();
                 return;
             }
 
-            attachedInventory.InventoryStatusId = selectedStatusObject.InventoryStatusId;
+            inventoryItem.InventoryStatusId = selectedStatusObject.InventoryStatusId;
 
-
-            if (!string.IsNullOrEmpty(ImageName)) 
+            if (!string.IsNullOrEmpty(ImageName))
             {
                 attachedInventory.Photo = "inv/" + ImageName;
             }
-    
 
-
-            if (!ValidateInventory(attachedInventory)) 
-            {
+            if (!ValidateInventory(attachedInventory))
                 return;
-            }
 
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             var successMessage = MessageBoxManager.GetMessageBoxStandard(
                 "Успех",
                 "Данные обновлены успешно",
                 MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                MsBox.Avalonia.Enums.Icon.Success
-            );
-            await successMessage.ShowAsync();
+                MsBox.Avalonia.Enums.Icon.Success);
 
-            var invent = new InventoryWindow();
-            invent.Show();
-            this.Close();
-        }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException is Npgsql.NpgsqlException pgEx && pgEx.Message.Contains("duplicate key"))
-        {
-            var error = MessageBoxManager.GetMessageBoxStandard("Ошибка", "Ошибка при обновлении", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            await error.ShowAsync();
+            await successMessage.ShowAsync();
         }
         catch (Exception ex)
         {
-            var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+            var error = MessageBoxManager.GetMessageBoxStandard(
                 "Ошибка",
-                $"Произошла ошибка при сохранении",
+                ex.ToString(),
                 MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                MsBox.Avalonia.Enums.Icon.Error
-            );
-            await errorMessage.ShowAsync();
+                MsBox.Avalonia.Enums.Icon.Error);
+
+            await error.ShowAsync();
         }
     }
 }

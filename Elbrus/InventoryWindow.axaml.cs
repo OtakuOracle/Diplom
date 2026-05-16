@@ -25,40 +25,47 @@ public partial class InventoryWindow : Window
         using var context = new DiplomContext();
 
         var allInventories = context.Inventories
-                                .Include(x => x.InventoryStatus)
-                                .ToList();
+            .Include(x => x.InventoryItems)
+            .ThenInclude(i => i.InventoryStatus)
+            .ToList();
+
         switch (Sort.SelectedIndex)
         {
-
-            case 0: // Сортировка по возрастанию цены
+            case 0:
                 allInventories = allInventories.OrderBy(x => x.RentalCostPerHour).ToList();
                 break;
-            case 1: // Сортировка по убыванию цены
+
+            case 1:
                 allInventories = allInventories.OrderByDescending(x => x.RentalCostPerHour).ToList();
                 break;
-            default: // Если не выбрано, сортируем по возрастанию
+
+            default:
                 allInventories = allInventories.OrderBy(x => x.RentalCostPerHour).ToList();
                 break;
         }
 
         if (Filter.SelectedItem != null && Filter.SelectedItem.ToString() != "Все статусы")
         {
-            allInventories = allInventories.Where(x => x.InventoryStatus.InventoryStatusName == Filter.SelectedItem.ToString()).ToList();
+            allInventories = allInventories
+                .Where(x => x.InventoryItems.Any(i =>
+                    i.InventoryStatus != null &&
+                    i.InventoryStatus.InventoryStatusName == Filter.SelectedItem.ToString()))
+                .ToList();
         }
-
 
         if (SearchBox != null && !string.IsNullOrWhiteSpace(SearchBox.Text))
         {
             var searchTerm = SearchBox.Text.ToLower();
-            allInventories = allInventories.Where(x =>
-                (x.InventoryName != null && !string.IsNullOrWhiteSpace(x.InventoryName) && x.InventoryName.ToLower().Contains(searchTerm)) ||
-                (x.InventoryNumber != null && !string.IsNullOrWhiteSpace(x.InventoryNumber) && x.InventoryNumber.ToLower().Contains(searchTerm)) ||
-                (x.InventoryModel != null && !string.IsNullOrWhiteSpace(x.InventoryModel) && x.InventoryModel.ToLower().Contains(searchTerm)) ||
-                (x.InventorySize != null && !string.IsNullOrWhiteSpace(x.InventorySize) && x.InventorySize.ToLower().Contains(searchTerm))
 
+            allInventories = allInventories.Where(x =>
+                (x.InventoryName != null && x.InventoryName.ToLower().Contains(searchTerm)) ||
+                (x.InventoryModel != null && x.InventoryModel.ToLower().Contains(searchTerm)) ||
+                x.InventoryItems.Any(i =>
+                    (i.InventoryNumber != null && i.InventoryNumber.ToLower().Contains(searchTerm)) ||
+                    (i.Size != null && i.Size.ToLower().Contains(searchTerm))
+                )
             ).ToList();
         }
-
 
         InventoriesBox.ItemsSource = allInventories;
     }
