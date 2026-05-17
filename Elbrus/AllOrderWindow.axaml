@@ -51,6 +51,8 @@
                   <TextBlock Text="{Binding Employee, StringFormat=Сотрудник: {0}}"/>
                   <TextBlock Text="{Binding Service, StringFormat=Услуга: {0}}"/>
                   <TextBlock Text="{Binding Inventory, StringFormat=Инвентарь: {0}}"/>
+				  <TextBlock Text="{Binding Size, StringFormat=Размер: {0}}"/>  	
+					
 
                   <StackPanel Orientation="Horizontal" Spacing="20">
                     <TextBlock Text="{Binding TotalPrice, StringFormat=Цена: {0} ₽}"/>

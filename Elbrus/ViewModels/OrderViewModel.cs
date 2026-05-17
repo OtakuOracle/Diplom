@@ -27,6 +27,7 @@ namespace Elbrus.ViewModels
         e.full_name,
         s.service_name,
         i.inventory_name,
+        ii.size,
         o.total_price,
         os.date,
         os.time_in,
@@ -37,7 +38,9 @@ namespace Elbrus.ViewModels
     LEFT JOIN order_service os ON o.order_id = os.order_id
     LEFT JOIN service s ON os.service_id = s.service_id
     LEFT JOIN order_inventory oi ON os.order_service_id = oi.order_service_id
-    LEFT JOIN inventory i ON oi.inventory_id = i.inventory_id";
+    LEFT JOIN inventory_item ii ON oi.inventory_item_id = ii.inventory_item_id
+    LEFT JOIN inventory i ON ii.inventory_id = i.inventory_id";
+
 
             if (employeeId != null)
                 query += " WHERE o.employee_id = @employeeId";
@@ -57,12 +60,14 @@ namespace Elbrus.ViewModels
                     Employee = reader[1]?.ToString(),
                     Service = reader[2]?.ToString(),
                     Inventory = reader[3]?.ToString(),
-                    TotalPrice = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
-                    Date = reader.IsDBNull(5) ? null : reader.GetFieldValue<DateOnly>(5),
-                    TimeStart = reader.IsDBNull(6) ? null : reader.GetFieldValue<TimeOnly>(6),
-                    TimeEnd = reader.IsDBNull(7) ? null : reader.GetFieldValue<TimeOnly>(7)
+                    Size = reader[4]?.ToString(),
+                    TotalPrice = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    Date = reader.IsDBNull(6) ? null : reader.GetFieldValue<DateOnly>(6),
+                    TimeStart = reader.IsDBNull(7) ? null : reader.GetFieldValue<TimeOnly>(7),
+                    TimeEnd = reader.IsDBNull(8) ? null : reader.GetFieldValue<TimeOnly>(8)
                 });
             }
+
         }
 
 

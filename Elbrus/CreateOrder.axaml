@@ -179,7 +179,7 @@
                         HorizontalContentAlignment="Center"
                         Padding="12"/>
 
-				<Button Content="Отмена / Назад"
+				<Button Content="Отмена"
                         Click="OnLogoutClick"
                         Background="#F99D97"
                         Foreground="Black"

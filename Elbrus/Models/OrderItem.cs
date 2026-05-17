@@ -13,4 +13,6 @@ public class OrderItem
     public DateOnly? Date { get; set; }
     public TimeOnly? TimeStart { get; set; }
     public TimeOnly? TimeEnd { get; set; }
+    public string Size { get; set; }
+
 }
