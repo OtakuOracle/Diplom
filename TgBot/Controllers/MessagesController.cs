@@ -166,7 +166,7 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                    if (data == "open_services")
+                    if (data == "open_services" || data == "back_services")
                     {
                         var services = await _db.Services.ToListAsync();
 
@@ -314,7 +314,7 @@ namespace TgBot.Controllers
                             {
                                 new[]
                                 {
-                                    InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", $"srv_{serviceId}"),
+                                    InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", "back_services"),
                                     InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
                                 }
                             });
