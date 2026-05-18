@@ -14,7 +14,6 @@
 
   <Grid RowDefinitions="Auto,*">
 
-    <!-- Кнопка назад -->
     <Button Content="Назад"
             Width="100"
             Height="35"
@@ -23,7 +22,6 @@
 			Background="#3FA9F5"
             Click="Back_Click"/>
 
-    <!-- Список заказов -->
     <ScrollViewer Grid.Row="1">
       <ItemsControl ItemsSource="{Binding Orders}">
         <ItemsControl.ItemTemplate>
@@ -38,10 +36,8 @@
 
               <Grid ColumnDefinitions="6,*">
 
-                <!-- Голубая полоска -->
                 <Border Background="#3FA9F5" CornerRadius="10,0,0,10"/>
 
-                <!-- Содержимое -->
                 <StackPanel Grid.Column="1" Spacing="6" Margin="10,0,0,0">
 
                   <TextBlock Text="{Binding Client, StringFormat=Клиент: {0}}"

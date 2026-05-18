@@ -8,14 +8,12 @@ namespace Elbrus;
 
 public partial class AllOrderWindow : Window
 {
-    // нужен для Avalonia
     public AllOrderWindow()
     {
         InitializeComponent();
         DataContext = new OrderViewModel();
     }
 
-    // для сотрудника
     public AllOrderWindow(int employeeId)
     {
         InitializeComponent();

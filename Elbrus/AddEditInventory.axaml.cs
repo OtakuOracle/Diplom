@@ -11,12 +11,16 @@ using Elbrus.Helpers;
 using Elbrus.Models;
 using MsBox.Avalonia;
 using System.Collections.Generic;
+using Avalonia.Interactivity;
+using System.Collections.ObjectModel;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Elbrus;
 
 public partial class AddEditInventory : Window
 {
-
+    public ObservableCollection<InventoryItem> InventoryItemsList { get; set; } = new();
     private Inventory _inventory;
     private string ImageName;
     private string _currentPhotoPath;
@@ -27,6 +31,7 @@ public partial class AddEditInventory : Window
     public AddEditInventory()
     {
         InitializeComponent();
+        SizesList.ItemsSource = InventoryItemsList;
 
         _inventory = new Inventory(); 
         DataContext = _inventory;
@@ -47,9 +52,10 @@ public partial class AddEditInventory : Window
     public AddEditInventory(Inventory inventory)
     {
         InitializeComponent();
+        SizesList.ItemsSource = InventoryItemsList;
 
-        _inventory = inventory; 
-        DataContext = _inventory; 
+        _inventory = inventory;
+        DataContext = _inventory;
 
         LoadStatuses();
 
@@ -57,11 +63,15 @@ public partial class AddEditInventory : Window
         EditBut.IsVisible = true;
         DeleteBut.IsVisible = true;
 
+        LoadInventoryItems(_inventory.InventoryId);
+
         if (_inventory.GetPhoto != null)
         {
             ImageBox.Source = _inventory.GetPhoto;
         }
     }
+
+
 
 
 
@@ -111,9 +121,6 @@ public partial class AddEditInventory : Window
                 return;
             }
 
-            if (!ValidateInventory(newInventory))
-                return;
-
             var selectedStatusObject = InventoryStatus.SelectedItem as InventoryStatus;
 
             if (selectedStatusObject == null)
@@ -130,21 +137,23 @@ public partial class AddEditInventory : Window
 
             if (!string.IsNullOrEmpty(ImageName))
                 newInventory.Photo = "inv/" + ImageName;
-            else
-                newInventory.Photo = null;
 
             context.Inventories.Add(newInventory);
             await context.SaveChangesAsync();
 
-            var newItem = new InventoryItem
+            foreach (var item in InventoryItemsList)   // список всех добавленных размеров/номеров
             {
-                InventoryId = newInventory.InventoryId,
-                InventoryNumber = InventoryNumberBox.Text,
-                Size = InventorySizeBox.Text,
-                InventoryStatusId = selectedStatusObject.InventoryStatusId
-            };
+                var newItem = new InventoryItem
+                {
+                    InventoryId = newInventory.InventoryId,
+                    InventoryNumber = item.InventoryNumber,
+                    Size = item.Size,
+                    InventoryStatusId = selectedStatusObject.InventoryStatusId
+                };
 
-            context.InventoryItems.Add(newItem);
+                context.InventoryItems.Add(newItem);
+            }
+
             await context.SaveChangesAsync();
 
             var nice = MessageBoxManager.GetMessageBoxStandard(
@@ -170,6 +179,24 @@ public partial class AddEditInventory : Window
             await error.ShowAsync();
         }
     }
+
+    private void AddSize_Click(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(InventoryNumberBox.Text) ||
+            string.IsNullOrWhiteSpace(InventorySizeBox.Text))
+            return;
+
+        InventoryItemsList.Add(new InventoryItem
+        {
+            InventoryNumber = InventoryNumberBox.Text,
+            Size = InventorySizeBox.Text
+        });
+
+        InventoryNumberBox.Text = "";
+        InventorySizeBox.Text = "";
+    }
+
+
 
 
 
@@ -278,115 +305,134 @@ public partial class AddEditInventory : Window
 
         try
         {
-            var inventoryToUpdate = DataContext as Inventory;
+            var inventory = DataContext as Inventory;
 
-            if (inventoryToUpdate == null)
+            if (inventory == null)
             {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                await MessageBoxManager.GetMessageBoxStandard(
                     "Ошибка",
                     "Не удалось получить данные инвентаря",
                     MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error);
-
-                await errorMessage.ShowAsync();
+                    MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
                 return;
             }
 
-            var attachedInventory = await context.Inventories.FindAsync(inventoryToUpdate.InventoryId);
+            if (string.IsNullOrWhiteSpace(inventory.InventoryName) ||
+                string.IsNullOrWhiteSpace(inventory.InventoryModel) ||
+                inventory.RentalCostPerHour == null ||
+                !InventoryItemsList.Any())
+            {
+                await MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Все поля и хотя бы один размер должны быть заполнены",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                return;
+            }
+
+            var selectedStatus = InventoryStatus.SelectedItem as InventoryStatus;
+
+            if (selectedStatus == null)
+            {
+                await MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка",
+                    "Выберите статус",
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                return;
+            }
+
+            var attachedInventory = await context.Inventories
+                .FirstOrDefaultAsync(x => x.InventoryId == inventory.InventoryId);
 
             if (attachedInventory == null)
             {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                await MessageBoxManager.GetMessageBoxStandard(
                     "Ошибка",
-                    "Запись инвентаря не найдена",
+                    "Инвентарь не найден",
                     MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error);
-
-                await errorMessage.ShowAsync();
+                    MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
                 return;
             }
 
-            var inventoryItem = context.InventoryItems
-                .FirstOrDefault(x => x.InventoryId == inventoryToUpdate.InventoryId);
-
-            if (inventoryItem == null)
-            {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
-                    "Ошибка",
-                    "Экземпляр инвентаря не найден",
-                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error);
-
-                await errorMessage.ShowAsync();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(inventoryToUpdate.InventoryName) ||
-                string.IsNullOrWhiteSpace(inventoryToUpdate.InventoryModel) ||
-                inventoryToUpdate.RentalCostPerHour == null)
-            {
-                var validationError = MessageBoxManager.GetMessageBoxStandard(
-                    "Ошибка",
-                    "Все поля должны быть заполнены",
-                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error);
-
-                await validationError.ShowAsync();
-                return;
-            }
-
-            attachedInventory.InventoryName = inventoryToUpdate.InventoryName;
-            attachedInventory.InventoryModel = inventoryToUpdate.InventoryModel;
-            attachedInventory.RentalCostPerHour = inventoryToUpdate.RentalCostPerHour;
-
-            inventoryItem.InventoryNumber = InventoryNumberBox.Text;
-            inventoryItem.Size = InventorySizeBox.Text;
-
-            var selectedStatusObject = InventoryStatus.SelectedItem as InventoryStatus;
-
-            if (selectedStatusObject == null)
-            {
-                var errorMessage = MessageBoxManager.GetMessageBoxStandard(
-                    "Ошибка",
-                    "Не выбран статус",
-                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error);
-
-                await errorMessage.ShowAsync();
-                return;
-            }
-
-            inventoryItem.InventoryStatusId = selectedStatusObject.InventoryStatusId;
+            attachedInventory.InventoryName = inventory.InventoryName;
+            attachedInventory.InventoryModel = inventory.InventoryModel;
+            attachedInventory.RentalCostPerHour = inventory.RentalCostPerHour;
 
             if (!string.IsNullOrEmpty(ImageName))
             {
                 attachedInventory.Photo = "inv/" + ImageName;
             }
 
-            if (!ValidateInventory(attachedInventory))
-                return;
+            var oldItems = context.InventoryItems
+                .Where(x => x.InventoryId == inventory.InventoryId)
+                .ToList();
+
+            context.InventoryItems.RemoveRange(oldItems);
+
+            var newItems = InventoryItemsList.Select(item => new InventoryItem
+            {
+                InventoryId = inventory.InventoryId,
+                InventoryNumber = item.InventoryNumber,
+                Size = item.Size,
+                InventoryStatusId = selectedStatus.InventoryStatusId
+            });
+
+            await context.InventoryItems.AddRangeAsync(newItems);
 
             await context.SaveChangesAsync();
 
-            var successMessage = MessageBoxManager.GetMessageBoxStandard(
+            await MessageBoxManager.GetMessageBoxStandard(
                 "Успех",
-                "Данные обновлены успешно",
+                "Инвентарь успешно обновлён",
                 MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                MsBox.Avalonia.Enums.Icon.Success);
+                MsBox.Avalonia.Enums.Icon.Success).ShowAsync();
+            
+            var inventoryWindow = new InventoryWindow();
+            inventoryWindow.Show();
 
-            await successMessage.ShowAsync();
+            this.Close();
         }
         catch (Exception ex)
         {
-            var error = MessageBoxManager.GetMessageBoxStandard(
+            await MessageBoxManager.GetMessageBoxStandard(
                 "Ошибка",
-                ex.ToString(),
+                ex.Message,
                 MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                MsBox.Avalonia.Enums.Icon.Error);
-
-            await error.ShowAsync();
+                MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
         }
     }
+
+
+    private void LoadInventoryItems(int inventoryId)
+    {
+        using var context = new DiplomContext();
+
+        var items = context.InventoryItems
+            .Where(x => x.InventoryId == inventoryId)
+            .ToList();
+
+        InventoryItemsList.Clear(); 
+        foreach (var item in items)
+        {
+            InventoryItemsList.Add(new InventoryItem
+            {
+                InventoryNumber = item.InventoryNumber,
+                Size = item.Size
+            });
+        }
+    }
+
+
+
+    private void DeleteSize_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is InventoryItem item)
+        {
+            InventoryItemsList.Remove(item);
+        }
+    }
+
 }
 
 

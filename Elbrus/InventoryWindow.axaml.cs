@@ -34,11 +34,9 @@ public partial class InventoryWindow : Window
             case 0:
                 allInventories = allInventories.OrderBy(x => x.RentalCostPerHour).ToList();
                 break;
-
             case 1:
                 allInventories = allInventories.OrderByDescending(x => x.RentalCostPerHour).ToList();
                 break;
-
             default:
                 allInventories = allInventories.OrderBy(x => x.RentalCostPerHour).ToList();
                 break;
@@ -48,28 +46,26 @@ public partial class InventoryWindow : Window
         {
             allInventories = allInventories
                 .Where(x => x.InventoryItems.Any(i =>
-                    i.InventoryStatus != null &&
                     i.InventoryStatus.InventoryStatusName == Filter.SelectedItem.ToString()))
                 .ToList();
         }
 
-        if (SearchBox != null && !string.IsNullOrWhiteSpace(SearchBox.Text))
+        if (!string.IsNullOrWhiteSpace(SearchBox.Text))
         {
-            var searchTerm = SearchBox.Text.ToLower();
+            var search = SearchBox.Text.ToLower();
 
             allInventories = allInventories.Where(x =>
-                (x.InventoryName != null && x.InventoryName.ToLower().Contains(searchTerm)) ||
-                (x.InventoryModel != null && x.InventoryModel.ToLower().Contains(searchTerm)) ||
+                (x.InventoryName != null && x.InventoryName.ToLower().Contains(search)) ||
+                (x.InventoryModel != null && x.InventoryModel.ToLower().Contains(search)) ||
                 x.InventoryItems.Any(i =>
-                    (i.InventoryNumber != null && i.InventoryNumber.ToLower().Contains(searchTerm)) ||
-                    (i.Size != null && i.Size.ToLower().Contains(searchTerm))
+                    (i.InventoryNumber != null && i.InventoryNumber.ToLower().Contains(search)) ||
+                    (i.Size != null && i.Size.ToLower().Contains(search))
                 )
             ).ToList();
         }
 
         InventoriesBox.ItemsSource = allInventories;
     }
-
 
     private void SearchBox_KeyUp(object? sender, Avalonia.Input.KeyEventArgs e)
     {

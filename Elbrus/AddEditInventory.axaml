@@ -12,80 +12,144 @@
 		<ImageBrush Source="avares://Elbrus/Images/back.png" Opacity="1" Stretch="UniformToFill"/>
 	</Window.Background>
 
-	<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
 
-		<TextBox Margin="5"
-				 Watermark="Введите название"
-				 Width="200"
-				 Text="{Binding InventoryName}" />
+		<StackPanel Width="300"
+					HorizontalAlignment="Center"
+					Spacing="6">
 
-		<TextBox Margin="5"
-				 Name="InventoryNumberBox"
-				 Watermark="Введите номер"
-				 Width="200" />
+			<TextBox Width="300"
+					 Watermark="Введите название"
+					 Text="{Binding InventoryName}" />
 
-		<TextBox Margin="5"
-				 Watermark="Введите модель"
-				 Width="200"
-				 Text="{Binding InventoryModel}" />
+			<TextBox Width="300"
+					 Watermark="Введите модель"
+					 Text="{Binding InventoryModel}" />
 
-		<TextBox Margin="5"
-				 Name="InventorySizeBox"
-				 Watermark="Введите размер"
-				 Width="200" />
+			<TextBox Width="300"
+					 Name="InventoryNumberBox"
+					 Watermark="Введите номер" />
 
-		<TextBox Margin="5"
-				 Watermark="Введите цену за час аренды"
-				 Width="200"
-				 Text="{Binding RentalCostPerHour}" />
 
-		<ComboBox Name="InventoryStatus"
-				  Width="200"
-				  Margin="5"
-				  PlaceholderText="Выберите статус">
-			<ComboBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding InventoryStatusName}" />
-				</DataTemplate>
-			</ComboBox.ItemTemplate>
-		</ComboBox>
+			<TextBox Width="300"
+					 Name="InventorySizeBox"
+					 Watermark="Введите размер" />
 
-		<Image Source="{Binding GetPhoto}"
-			   Height="100"
-			   Width="100"
-			   Margin="5"
-			   Name="ImageBox" />
+			<Button Content="Добавить номер и размер"
+					Width="300"
+					Background="#00FA9A"
+					Click="AddSize_Click"
+					Name="AddSizeBut"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
 
-		<Button Content="Добавить картинку"
-				Background="#00FFFF"
-				Margin="5"
-				Click="AddImage_Click" />
+			<Grid ColumnDefinitions="100,100,*">
 
-		<Button Name="AddBut"
-				Content="Добавить инвентарь"
-				Margin="5"
-				Background="#ADFF2F"
-				IsVisible="False"
-				Click="Add_Click" />
+				<TextBlock Grid.Column="0"
+						   Text="Номер"
+						   FontWeight="Bold"/>
 
-		<Button Content="Изменить инвентарь"
-				Margin="5"
-				Background="#00FF00"
-				Click="Edit_Click"
-				IsVisible="False"
-				Name="EditBut" />
+				<TextBlock Grid.Column="1"
+						   Text="Размер"
+						   FontWeight="Bold"/>
 
-		<Button Content="Удалить инвентарь"
-				Margin="5"
-				Click="Delete_Click"
-				Background="#FF0000"
-				IsVisible="False"
-				Name="DeleteBut" />
+			</Grid>
 
-		<Button Content="Назад"
-				Margin="5"
-				Background="#696969"
-				Click="Back_Click" />
 
-	</StackPanel>
+			<ListBox Name="SizesList"
+					 Width="300"
+					 Height="150"
+					 ItemsSource="{Binding InventoryItemsList}">
+
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+
+						<Grid ColumnDefinitions="100,100,*">
+
+							<TextBlock Grid.Column="0"
+									   Text="{Binding InventoryNumber}" />
+
+							<TextBlock Grid.Column="1"
+									   Text="{Binding Size}" />
+
+							<Button Grid.Column="2"
+									Content="Удалить"
+									Background="Red"
+									Click="DeleteSize_Click"/>
+
+						</Grid>
+
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+
+			</ListBox>
+
+			<TextBox Width="300"
+					 Watermark="Введите цену за час аренды"
+					 Text="{Binding RentalCostPerHour}" />
+
+			<ComboBox Name="InventoryStatus"
+					  Width="300"
+					  PlaceholderText="Выберите статус">
+
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding InventoryStatusName}" />
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+
+			</ComboBox>
+
+			<Image Source="{Binding GetPhoto}"
+				   Height="100"
+				   Width="100"
+				   HorizontalAlignment="Center"
+				   Margin="5"
+				   Name="ImageBox" />
+
+			<Button Content="Добавить картинку"
+					Width="300"
+					Background="#00FFFF"
+					Click="AddImage_Click"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
+
+			<Button Name="AddBut"
+					Content="Добавить инвентарь"
+					Width="300"
+					Background="#ADFF2F"
+					IsVisible="False"
+					Click="Add_Click"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
+
+			<Button Content="Изменить инвентарь"
+					Width="300"
+					Background="#00FF00"
+					Click="Edit_Click"
+					IsVisible="False"
+					Name="EditBut"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
+
+			<Button Content="Удалить инвентарь"
+					Width="300"
+					Background="#FF0000"
+					IsVisible="False"
+					Click="Delete_Click"
+					Name="DeleteBut"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
+
+			<Button Content="Назад"
+					Width="300"
+					Background="#696969"
+					Click="Back_Click"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"/>
+
+		</StackPanel>
+
+	</ScrollViewer>
+
 </Window>
