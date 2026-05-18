@@ -118,7 +118,7 @@ namespace TgBot.Controllers
                     var messageId = update.CallbackQuery.Message.MessageId;
                     var data = update.CallbackQuery.Data;
 
-                    if (data == "openinventory" || data == "backinventory")
+                    if (data == "open_inventory" || data == "back_inventory")
                     {
                         var items = await _db.Inventories.ToListAsync();
 
@@ -141,6 +141,7 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
+
 
                     if (data == "open_services")
                     {
@@ -283,7 +284,7 @@ namespace TgBot.Controllers
                         {
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
+                       InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
                     },
                     new[]
                     {
