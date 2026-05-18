@@ -150,9 +150,9 @@ namespace TgBot.Controllers
                                 $"inv_{x.InventoryId}"
                             ))
                             .Select(x => new[] { x })
-                            .ToList(); 
+                            .ToList();
 
-                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") }); 
+                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") });
 
                         var keyboard = new InlineKeyboardMarkup(buttons);
 
@@ -166,7 +166,7 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                    if (data == "open_services")
+                    if (data == "open_services" || data == "back_service")
                     {
                         var services = await _db.Services.ToListAsync();
 
@@ -176,9 +176,9 @@ namespace TgBot.Controllers
                                 $"srv_{x.ServiceId}"
                             ))
                             .Select(x => new[] { x })
-                            .ToList(); 
+                            .ToList();
 
-                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") }); 
+                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") });
 
                         var keyboard = new InlineKeyboardMarkup(buttons);
 
@@ -229,38 +229,40 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                if (data.StartsWith("sizes_"))
-                {
-                    var inventoryId = int.Parse(data.Replace("sizes_", ""));
-
-                    var sizes = await _db.InventoryItems
-                        .Where(x => x.InventoryId == inventoryId)
-                        .Include(x => x.InventoryStatus)
-                        .ToListAsync();
-
-                    if (sizes.Any())
+                    if (data.StartsWith("sizes_"))
                     {
-                        var sizesTextBuilder = new System.Text.StringBuilder(); 
+                        var inventoryId = int.Parse(data.Replace("sizes_", ""));
 
-                        sizesTextBuilder.Append("📏 Размеры:\n\n");
+                        var sizes = await _db.InventoryItems
+                            .Where(x => x.InventoryId == inventoryId)
+                            .Include(x => x.InventoryStatus)
+                            .ToListAsync();
 
-                        foreach (var s in sizes)
+                        if (sizes.Any())
                         {
-                            string statusIcon;
-                            if (s.InventoryStatus.InventoryStatusName.Contains("В наличии", StringComparison.OrdinalIgnoreCase))
+                            var sizesTextBuilder = new System.Text.StringBuilder();
+
+                            sizesTextBuilder.Append("📏 Размеры:\n\n");
+
+                            foreach (var s in sizes)
                             {
-                                statusIcon = "✅"; 
-                            }
-                            else
-                            {
-                                statusIcon = "❌"; 
+                                string statusIcon;
+                                string statusText = s.InventoryStatus.InventoryStatusName;
+
+                                if (s.InventoryStatus.InventoryStatusName.Contains("В наличии", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    statusIcon = "✅";
+                                }
+                                else
+                                {
+                                    statusIcon = "❌";
+                                }
+
+                                sizesTextBuilder.AppendLine($"Размер: {s.Size} — {statusText} {statusIcon}");
                             }
 
-                            sizesTextBuilder.AppendLine($"{statusIcon} Размер: {s.Size} — {s.InventoryStatus.InventoryStatusName}");
-                        }
-
-                        var keyboard = new InlineKeyboardMarkup(new[]
-                        {
+                            var keyboard = new InlineKeyboardMarkup(new[]
+                            {
                             new[]
                             {
                                 InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"inv_{inventoryId}")
@@ -271,31 +273,32 @@ namespace TgBot.Controllers
                             }
                         });
 
-                        await _botClient.EditMessageText(
-                            chatId,
-                            messageId,
-                            sizesTextBuilder.ToString(), 
-                            replyMarkup: keyboard
-                        );
-                    }
-                    else
-                    {
-                        var keyboard = new InlineKeyboardMarkup(new[]
+                            await _botClient.EditMessageText(
+                                chatId,
+                                messageId,
+                                sizesTextBuilder.ToString(),
+                                replyMarkup: keyboard
+                            );
+                        }
+                        else
                         {
+                            var keyboard = new InlineKeyboardMarkup(new[]
+                            {
                             new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"inv_{inventoryId}") },
                             new[] { InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start") }
                         });
 
-                        await _botClient.EditMessageText(
-                            chatId,
-                            messageId,
-                            "📏 Размеры: \n\nВ данный момент информация о размерах отсутствует.",
-                            replyMarkup: keyboard
-                        );
+                            await _botClient.EditMessageText(
+                                chatId,
+                                messageId,
+                                "📏 Размеры: \n\nВ данный момент информация о размерах отсутствует.",
+                                replyMarkup: keyboard
+                            );
+                        }
+
+                        return Ok();
                     }
 
-                    return Ok();
-                }
 
                     if (data.StartsWith("srv_"))
                     {
@@ -312,12 +315,15 @@ namespace TgBot.Controllers
 
                             var keyboard = new InlineKeyboardMarkup(new[]
                             {
-                                new[]
-                                {
-                                    InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", $"srv_{serviceId}"),
-                                    InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start") 
-                                }
-                            });
+                            new[]
+                            {
+                                InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", "back_service") 
+                            },
+                            new[]
+                            {
+                                InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
+                            }
+                        });
 
 
                             await _botClient.EditMessageText(
@@ -330,17 +336,17 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
-                }
 
-                if (update?.Message?.Text != null)
-                {
-                    var chatIdMessage = update.Message.Chat.Id;
-                    var text = update.Message.Text;
 
-                    if (text == "/start")
+                    if (update?.Message?.Text != null)
                     {
-                        var keyboard = new InlineKeyboardMarkup(new[]
+                        var chatIdMessage = update.Message.Chat.Id;
+                        var text = update.Message.Text;
+
+                        if (text == "/start")
                         {
+                            var keyboard = new InlineKeyboardMarkup(new[]
+                            {
                         new[]
                         {
                            InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
@@ -351,11 +357,12 @@ namespace TgBot.Controllers
                         }
                     });
 
-                        await _botClient.SendMessage(
-                            chatIdMessage,
-                            "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
-                            replyMarkup: keyboard
-                        );
+                            await _botClient.SendMessage(
+                                chatIdMessage,
+                                "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
+                                replyMarkup: keyboard
+                            );
+                        }
                     }
                 }
             }
