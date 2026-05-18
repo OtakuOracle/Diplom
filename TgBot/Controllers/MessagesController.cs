@@ -105,21 +105,20 @@ namespace TgBot.Controllers
             );
         }
 
-
-
         [HttpPost]
         [Consumes("application/json")]
         public async Task<IActionResult> Post([FromBody] Update? update)
         {
             try
             {
+                // ОБРАБОТКА КНОПОК
                 if (update?.CallbackQuery != null)
                 {
                     var chatId = update.CallbackQuery.Message.Chat.Id;
                     var messageId = update.CallbackQuery.Message.MessageId;
                     var data = update.CallbackQuery.Data;
 
-                    if (data == "open_inventory" || data == "back_inventory")
+                    if (data == "openinventory" || data == "backinventory")
                     {
                         var items = await _db.Inventories.ToListAsync();
 
@@ -145,14 +144,32 @@ namespace TgBot.Controllers
 
                     if (data == "open_services")
                     {
-                        await SendServices(chatId, messageId);
+                        var services = await _db.Services.ToListAsync();
+
+                        var buttons = services
+                            .Select(x => InlineKeyboardButton.WithCallbackData(
+                                $"{GetIcon(x.ServiceName)} {x.ServiceName}",
+                                $"srv_{x.ServiceId}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToArray();
+
+                        var keyboard = new InlineKeyboardMarkup(buttons);
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "🧑🏫 Выберите услугу:",
+                            replyMarkup: keyboard
+                        );
+
                         return Ok();
                     }
 
                     if (data.StartsWith("inv_"))
                     {
-                        var id = int.Parse(data.Replace("inv_", ""));
-                        var item = await _db.Inventories.FindAsync(id);
+                        var inventoryId = int.Parse(data.Replace("inv_", ""));
+                        var item = await _db.Inventories.FindAsync(inventoryId);
 
                         if (item != null)
                         {
@@ -161,15 +178,19 @@ namespace TgBot.Controllers
                             var message =
                                 $"{icon} {item.InventoryName}\n\n" +
                                 $"Модель: {item.InventoryModel}\n" +
-                                $"Размер: {item.InventorySize}\n" +
                                 $"💰 Цена: {item.RentalCostPerHour} ₽ / час";
 
-                            var keyboard = new InlineKeyboardMarkup(
-                                InlineKeyboardButton.WithCallbackData(
-                                    "⬅️ Назад к списку",
-                                    "back_inventory"
-                                )
-                            );
+                            var keyboard = new InlineKeyboardMarkup(new[]
+                            {
+                        new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("📏 Размеры", $"sizes_{inventoryId}")
+                        },
+                        new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("⬅️ Назад к списку", "back_inventory")
+                        }
+                    });
 
                             await _botClient.EditMessageText(
                                 chatId,
@@ -182,10 +203,46 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
+                    if (data.StartsWith("sizes_"))
+                    {
+                        var inventoryId = int.Parse(data.Replace("sizes_", ""));
+
+                        var sizes = await _db.InventoryItems
+                            .Where(x => x.InventoryId == inventoryId)
+                            .Include(x => x.InventoryStatus)
+                            .ToListAsync();
+
+                        if (sizes.Any())
+                        {
+                            var sizesText = "📏 Размеры:\n\n";
+
+                            foreach (var s in sizes)
+                            {
+                                sizesText += $"Размер: {s.Size} — {s.InventoryStatus.InventoryStatusName}\n";
+                            }
+
+                            var keyboard = new InlineKeyboardMarkup(
+                                InlineKeyboardButton.WithCallbackData(
+                                    "⬅️ Назад",
+                                    $"inv_{inventoryId}"
+                                )
+                            );
+
+                            await _botClient.EditMessageText(
+                                chatId,
+                                messageId,
+                                sizesText,
+                                replyMarkup: keyboard
+                            );
+                        }
+
+                        return Ok();
+                    }
+
                     if (data.StartsWith("srv_"))
                     {
-                        var id = int.Parse(data.Replace("srv_", ""));
-                        var service = await _db.Services.FindAsync(id);
+                        var serviceId = int.Parse(data.Replace("srv_", ""));
+                        var service = await _db.Services.FindAsync(serviceId);
 
                         if (service != null)
                         {
@@ -214,31 +271,32 @@ namespace TgBot.Controllers
                     }
                 }
 
-                if (update?.Message?.Text == null)
-                    return Ok();
-
-                var chatIdMessage = update.Message.Chat.Id;
-                var text = update.Message.Text;
-
-                if (text == "/start") //Проверка!
+                // ОБРАБОТКА ТЕКСТОВЫХ СООБЩЕНИЙ
+                if (update?.Message?.Text != null)
                 {
-                    var keyboard = new InlineKeyboardMarkup(new[]
+                    var chatIdMessage = update.Message.Chat.Id;
+                    var text = update.Message.Text;
+
+                    if (text == "/start")
                     {
-                new []
-                {
-                    InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
-                },
-                new []
-                {
-                    InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
-                }
-            });
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
+                    }
+                });
 
-                    await _botClient.SendMessage(
-                        chatIdMessage,
-                        "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
-                        replyMarkup: keyboard
-                    );
+                        await _botClient.SendMessage(
+                            chatIdMessage,
+                            "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
+                            replyMarkup: keyboard
+                        );
+                    }
                 }
             }
             catch (Exception ex)

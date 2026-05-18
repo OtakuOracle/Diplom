@@ -137,3 +137,5 @@ C:\Users\Admin\Desktop\Diplom\TgBot\obj\Debug\net10.0\refint\TgBot.dll
 C:\Users\Admin\Desktop\Diplom\TgBot\obj\Debug\net10.0\TgBot.pdb
 C:\Users\Admin\Desktop\Diplom\TgBot\obj\Debug\net10.0\TgBot.genruntimeconfig.cache
 C:\Users\Admin\Desktop\Diplom\TgBot\obj\Debug\net10.0\ref\TgBot.dll
+C:\Users\Admin\Desktop\Diplom\TgBot\bin\Debug\net10.0\ColorTextBlock.Avalonia.dll
+C:\Users\Admin\Desktop\Diplom\TgBot\bin\Debug\net10.0\Markdown.Avalonia.dll
