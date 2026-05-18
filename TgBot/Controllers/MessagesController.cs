@@ -166,7 +166,7 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                    if (data == "open_services" || data == "back_service")
+                    if (data == "open_services")
                     {
                         var services = await _db.Services.ToListAsync();
 
@@ -247,8 +247,6 @@ namespace TgBot.Controllers
                             foreach (var s in sizes)
                             {
                                 string statusIcon;
-                                string statusText = s.InventoryStatus.InventoryStatusName;
-
                                 if (s.InventoryStatus.InventoryStatusName.Contains("В наличии", StringComparison.OrdinalIgnoreCase))
                                 {
                                     statusIcon = "✅";
@@ -258,7 +256,7 @@ namespace TgBot.Controllers
                                     statusIcon = "❌";
                                 }
 
-                                sizesTextBuilder.AppendLine($"Размер: {s.Size} — {statusText} {statusIcon}");
+                                sizesTextBuilder.AppendLine($"{statusIcon} Размер: {s.Size} — {s.InventoryStatus.InventoryStatusName}");
                             }
 
                             var keyboard = new InlineKeyboardMarkup(new[]
@@ -299,7 +297,6 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-
                     if (data.StartsWith("srv_"))
                     {
                         var serviceId = int.Parse(data.Replace("srv_", ""));
@@ -315,15 +312,12 @@ namespace TgBot.Controllers
 
                             var keyboard = new InlineKeyboardMarkup(new[]
                             {
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", "back_service") 
-                            },
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
-                            }
-                        });
+                                new[]
+                                {
+                                    InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", $"srv_{serviceId}"),
+                                    InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
+                                }
+                            });
 
 
                             await _botClient.EditMessageText(
@@ -336,17 +330,17 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
+                }
 
+                if (update?.Message?.Text != null)
+                {
+                    var chatIdMessage = update.Message.Chat.Id;
+                    var text = update.Message.Text;
 
-                    if (update?.Message?.Text != null)
+                    if (text == "/start")
                     {
-                        var chatIdMessage = update.Message.Chat.Id;
-                        var text = update.Message.Text;
-
-                        if (text == "/start")
+                        var keyboard = new InlineKeyboardMarkup(new[]
                         {
-                            var keyboard = new InlineKeyboardMarkup(new[]
-                            {
                         new[]
                         {
                            InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
@@ -357,12 +351,11 @@ namespace TgBot.Controllers
                         }
                     });
 
-                            await _botClient.SendMessage(
-                                chatIdMessage,
-                                "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
-                                replyMarkup: keyboard
-                            );
-                        }
+                        await _botClient.SendMessage(
+                            chatIdMessage,
+                            "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
+                            replyMarkup: keyboard
+                        );
                     }
                 }
             }
