@@ -382,7 +382,7 @@ namespace TgBot.Controllers
 
                         _tempService[chatId] = serviceId;
 
-                        var dates = Enumerable.Range(0, 5)
+                        var dates = Enumerable.Range(0, 7)
                             .Select(i => DateTime.Now.Date.AddDays(i))
                             .ToList();
 
@@ -413,7 +413,7 @@ namespace TgBot.Controllers
                         var date = DateOnly.Parse(data.Replace("date_", ""));
                         _tempDate[chatId] = date;
 
-                        var times = Enumerable.Range(9, 10); // 09:00 - 18:00
+                        var times = Enumerable.Range(9, 12); // 09:00 - 20:00
 
                         var buttons = times
                             .Select(h => InlineKeyboardButton.WithCallbackData(
@@ -437,7 +437,7 @@ namespace TgBot.Controllers
                         var hour = int.Parse(data.Replace("timein_", ""));
                         _tempTimeIn[chatId] = new TimeOnly(hour, 0);
 
-                        var times = Enumerable.Range(hour + 1, 10 - (hour - 9));
+                        var times = Enumerable.Range(hour + 1, 20 - hour);
 
                         var buttons = times
                             .Select(h => InlineKeyboardButton.WithCallbackData(
@@ -456,6 +456,7 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
+
                     if (data.StartsWith("timeout_"))
                     {
                         if (!_authorizedUsers.ContainsKey(chatId))
