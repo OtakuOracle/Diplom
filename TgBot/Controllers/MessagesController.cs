@@ -125,14 +125,11 @@ namespace TgBot.Controllers
                     {
                         _userStates[chatId] = "wait_email";
 
-                        await _botClient.SendMessage(
-                            chatId,
-                            "🏔 Добро пожаловать в сервис горнолыжного курорта!\n\nВведите ваш email:"
-                        );
+                        await _botClient.SendMessage(chatId,
+                            "🏔 Добро пожаловать!\n\nВведите email:");
 
                         return Ok();
                     }
-
 
                     if (_userStates.ContainsKey(chatId))
                     {
@@ -159,8 +156,23 @@ namespace TgBot.Controllers
                                 _authorizedUsers[chatId] = client.ClientId;
                                 _userStates.Remove(chatId);
 
-                                await _botClient.SendMessage(chatId,
-                                    $"✅ Вы вошли как {client.FullName}");
+                                var keyboard = new InlineKeyboardMarkup(new[]
+                                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь","open_inventory")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги","open_services")
+                    }
+                });
+
+                                await _botClient.SendMessage(
+                                    chatId,
+                                    $"✅ Вы вошли как {client.FullName}",
+                                    replyMarkup: keyboard
+                                );
                             }
                             else
                             {
@@ -172,6 +184,7 @@ namespace TgBot.Controllers
                         }
                     }
                 }
+
 
                 if (update.CallbackQuery != null)
                 {
