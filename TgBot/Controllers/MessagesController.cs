@@ -17,6 +17,10 @@ namespace TgBot.Controllers
         private static Dictionary<long, string> _userStates = new();
         private static Dictionary<long, int> _authorizedUsers = new();
         private static Dictionary<long, string> _tempEmail = new();
+        private static Dictionary<long, int> _tempService = new();
+        private static Dictionary<long, DateOnly> _tempDate = new();
+        private static Dictionary<long, TimeOnly> _tempTimeIn = new();
+
 
 
         public MessagesController(
@@ -339,8 +343,120 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
-
                     if (data.StartsWith("srv_"))
+                    {
+                        var serviceId = int.Parse(data.Replace("srv_", ""));
+                        var service = await _db.Services.FindAsync(serviceId);
+
+                        if (service == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Услуга не найдена.");
+                            return Ok();
+                        }
+
+                        var icon = GetIcon(service.ServiceName);
+
+                        var message =
+                            $"{icon} {service.ServiceName}\n\n" +
+                            $"💰 Цена: {service.CostPerHour} ₽ / час";
+
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                        new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("✅ Забронировать", $"book_srv_{serviceId}")
+                        },
+                        new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("⬅️ Назад", "open_services")
+                        }
+                    });
+
+                        await _botClient.EditMessageText(chatId, messageId, message, replyMarkup: keyboard);
+
+                        return Ok();
+                    }
+                    if (data.StartsWith("book_srv_"))
+                    {
+                        var serviceId = int.Parse(data.Replace("book_srv_", ""));
+
+                        _tempService[chatId] = serviceId;
+
+                        var dates = Enumerable.Range(0, 5)
+                            .Select(i => DateTime.Now.Date.AddDays(i))
+                            .ToList();
+
+                        var buttons = dates
+                            .Select(d => InlineKeyboardButton.WithCallbackData(
+                                d.ToString("dd.MM"),
+                                $"date_{d:yyyy-MM-dd}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToList();
+
+                        buttons.Add(new[]
+                        {
+        InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"srv_{serviceId}")
+    });
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "📅 Выберите дату:",
+                            replyMarkup: new InlineKeyboardMarkup(buttons)
+                        );
+
+                        return Ok();
+                    }
+                    if (data.StartsWith("date_"))
+                    {
+                        var date = DateOnly.Parse(data.Replace("date_", ""));
+                        _tempDate[chatId] = date;
+
+                        var times = Enumerable.Range(9, 10); // 09:00 - 18:00
+
+                        var buttons = times
+                            .Select(h => InlineKeyboardButton.WithCallbackData(
+                                $"{h}:00",
+                                $"timein_{h}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToList();
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "⏰ Выберите время начала:",
+                            replyMarkup: new InlineKeyboardMarkup(buttons)
+                        );
+
+                        return Ok();
+                    }
+                    if (data.StartsWith("timein_"))
+                    {
+                        var hour = int.Parse(data.Replace("timein_", ""));
+                        _tempTimeIn[chatId] = new TimeOnly(hour, 0);
+
+                        var times = Enumerable.Range(hour + 1, 10 - (hour - 9));
+
+                        var buttons = times
+                            .Select(h => InlineKeyboardButton.WithCallbackData(
+                                $"{h}:00",
+                                $"timeout_{h}"
+                            ))
+                            .Select(x => new[] { x })
+                            .ToList();
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "⏰ Выберите время окончания:",
+                            replyMarkup: new InlineKeyboardMarkup(buttons)
+                        );
+
+                        return Ok();
+                    }
+                    if (data.StartsWith("timeout_"))
                     {
                         if (!_authorizedUsers.ContainsKey(chatId))
                         {
@@ -348,8 +464,15 @@ namespace TgBot.Controllers
                             return Ok();
                         }
 
-                        var serviceId = int.Parse(data.Replace("srv_", ""));
+                        var hour = int.Parse(data.Replace("timeout_", ""));
+                        var timeOut = new TimeOnly(hour, 0);
+
+                        var timeIn = _tempTimeIn[chatId];
+                        var date = _tempDate[chatId];
+                        var serviceId = _tempService[chatId];
                         var clientId = _authorizedUsers[chatId];
+
+                        var rentHours = timeOut.Hour - timeIn.Hour;
 
                         var order = new Order
                         {
@@ -366,26 +489,35 @@ namespace TgBot.Controllers
                         {
                             OrderId = order.OrderId,
                             ServiceId = serviceId,
-                            RentTime = 1,
-                            OrderStatusId = 1
+                            RentTime = rentHours,
+                            OrderStatusId = 1,
+                            Date = date,
+                            TimeIn = timeIn,
+                            TimeOut = timeOut
                         };
 
                         _db.OrderServices.Add(orderService);
                         await _db.SaveChangesAsync();
 
-                        await _botClient.SendMessage(chatId, "✅ Услуга успешно забронирована!");
+                        _tempService.Remove(chatId);
+                        _tempDate.Remove(chatId);
+                        _tempTimeIn.Remove(chatId);
+
+                        await _botClient.SendMessage(chatId, "✅ Бронирование успешно создано!");
 
                         return Ok();
                     }
-                }
 
-                    return Ok();
+                }
             }
+
+
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 return Ok();
             }
+            return Ok();
         }
     }
 }

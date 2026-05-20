@@ -17,7 +17,7 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 282,
+          "DockedWidth": 320,
           "SelectedChildIndex": 2,
           "Children": [
             {
@@ -42,9 +42,9 @@
               "Title": "MessagesController.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeDocumentMoniker": "TgBot\\Controllers\\MessagesController.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs*",
-              "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs*",
-              "ViewState": "AgIAABwBAAAAAAAAAAAAAEABAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
+              "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs",
+              "ViewState": "AgIAAO4BAAAAAAAAAAAiwAoCAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-18T19:33:23.822Z",
               "EditorCaption": ""
@@ -52,7 +52,7 @@
           ]
         },
         {
-          "DockedWidth": 113,
+          "DockedWidth": 75,
           "SelectedChildIndex": -1,
           "Children": [
             {
