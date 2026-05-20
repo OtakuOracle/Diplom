@@ -14,6 +14,10 @@ namespace TgBot.Controllers
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<MessagesController> _logger;
         private readonly DiplomContext _db;
+        private static Dictionary<long, string> _userStates = new();
+        private static Dictionary<long, int> _authorizedUsers = new();
+        private static Dictionary<long, string> _tempEmail = new();
+
 
         public MessagesController(
             ITelegramBotClient botClient,
@@ -107,11 +111,69 @@ namespace TgBot.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<IActionResult> Post([FromBody] Update? update)
+        public async Task<IActionResult> Post([FromBody] Update update)
         {
             try
             {
-                if (update?.CallbackQuery != null)
+
+                if (update.Message != null && update.Message.Text != null)
+                {
+                    var chatId = update.Message.Chat.Id;
+                    var text = update.Message.Text;
+
+                    if (text == "/start")
+                    {
+                        _userStates[chatId] = "wait_email";
+
+                        await _botClient.SendMessage(
+                            chatId,
+                            "🏔 Добро пожаловать в сервис горнолыжного курорта!\n\nВведите ваш email:"
+                        );
+
+                        return Ok();
+                    }
+
+
+                    if (_userStates.ContainsKey(chatId))
+                    {
+                        var state = _userStates[chatId];
+
+                        if (state == "wait_email")
+                        {
+                            _tempEmail[chatId] = text;
+                            _userStates[chatId] = "wait_password";
+
+                            await _botClient.SendMessage(chatId, "Введите пароль:");
+                            return Ok();
+                        }
+
+                        if (state == "wait_password")
+                        {
+                            var email = _tempEmail[chatId];
+
+                            var client = await _db.Clients
+                                .FirstOrDefaultAsync(x => x.Email == email && x.Password == text);
+
+                            if (client != null)
+                            {
+                                _authorizedUsers[chatId] = client.ClientId;
+                                _userStates.Remove(chatId);
+
+                                await _botClient.SendMessage(chatId,
+                                    $"✅ Вы вошли как {client.FullName}");
+                            }
+                            else
+                            {
+                                await _botClient.SendMessage(chatId,
+                                    "❌ Неверный email или пароль");
+                            }
+
+                            return Ok();
+                        }
+                    }
+                }
+
+                if (update.CallbackQuery != null)
                 {
                     var chatId = update.CallbackQuery.Message.Chat.Id;
                     var messageId = update.CallbackQuery.Message.MessageId;
@@ -121,38 +183,54 @@ namespace TgBot.Controllers
                     {
                         var keyboard = new InlineKeyboardMarkup(new[]
                         {
-                        new[]
-                        {
-                            InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
-                        },
-                        new[]
-                        {
-                            InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
-                        }
-                    });
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🔑 Войти", "login")
+                    }
+                });
 
                         await _botClient.EditMessageText(
                             chatId,
                             messageId,
-                            "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
+                            "🏔 Добро пожаловать в сервис бронирования!",
                             replyMarkup: keyboard
                         );
+
                         return Ok();
                     }
 
-                    if (data == "open_inventory" || data == "back_inventory")
+                    if (data == "login")
+                    {
+                        _userStates[chatId] = "wait_email";
+
+                        await _botClient.SendMessage(chatId, "Введите email:");
+                        return Ok();
+                    }
+
+                    if (data == "open_inventory")
                     {
                         var items = await _db.Inventories.ToListAsync();
 
                         var buttons = items
                             .Select(x => InlineKeyboardButton.WithCallbackData(
-                                $"{GetIcon(x.InventoryName)} {x.InventoryName}",
+                                x.InventoryName,
                                 $"inv_{x.InventoryId}"
                             ))
                             .Select(x => new[] { x })
                             .ToList();
 
-                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") });
+                        buttons.Add(new[]
+                        {
+                    InlineKeyboardButton.WithCallbackData("⬅️ Назад", "back_to_start")
+                });
 
                         var keyboard = new InlineKeyboardMarkup(buttons);
 
@@ -166,19 +244,22 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                    if (data == "open_services" || data == "back_services")
+                    if (data == "open_services")
                     {
                         var services = await _db.Services.ToListAsync();
 
                         var buttons = services
                             .Select(x => InlineKeyboardButton.WithCallbackData(
-                                $"{GetIcon(x.ServiceName)} {x.ServiceName}",
+                                x.ServiceName,
                                 $"srv_{x.ServiceId}"
                             ))
                             .Select(x => new[] { x })
                             .ToList();
 
-                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад к главному меню", "back_to_start") });
+                        buttons.Add(new[]
+                        {
+                    InlineKeyboardButton.WithCallbackData("⬅️ Назад", "back_to_start")
+                });
 
                         var keyboard = new InlineKeyboardMarkup(buttons);
 
@@ -194,178 +275,104 @@ namespace TgBot.Controllers
 
                     if (data.StartsWith("inv_"))
                     {
+                        if (!_authorizedUsers.ContainsKey(chatId))
+                        {
+                            await _botClient.SendMessage(chatId, "Сначала авторизуйтесь.");
+                            return Ok();
+                        }
+
                         var inventoryId = int.Parse(data.Replace("inv_", ""));
-                        var item = await _db.Inventories.FindAsync(inventoryId);
+                        var clientId = _authorizedUsers[chatId];
+
+                        var order = new Order
+                        {
+                            ClientId = clientId,
+                            DateCreate = DateOnly.FromDateTime(DateTime.Now),
+                            TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
+                            TotalPrice = 0
+                        };
+
+                        _db.Orders.Add(order);
+                        await _db.SaveChangesAsync();
+
+                        var orderService = new OrderService
+                        {
+                            OrderId = order.OrderId,
+                            ServiceId = null,
+                            RentTime = 1,
+                            OrderStatusId = 1
+                        };
+
+                        _db.OrderServices.Add(orderService);
+                        await _db.SaveChangesAsync();
+
+                        var item = await _db.InventoryItems
+                            .FirstOrDefaultAsync(x => x.InventoryId == inventoryId);
 
                         if (item != null)
                         {
-                            var icon = GetIcon(item.InventoryName);
-
-                            var message =
-                                $"{icon} {item.InventoryName}\n\n" +
-                                $"Модель: {item.InventoryModel}\n" +
-                                $"💰 Цена: {item.RentalCostPerHour} ₽ / час";
-
-                            var keyboard = new InlineKeyboardMarkup(new[]
+                            var orderInventory = new OrderInventory
                             {
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("📏 Размеры", $"sizes_{inventoryId}")
-                            },
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("⬅️ Назад к списку", "back_inventory")
-                            }
-                        });
+                                InventoryItemId = item.InventoryItemId,
+                                OrderServiceId = orderService.OrderServiceId,
+                                RentTime = 1
+                            };
 
-                            await _botClient.EditMessageText(
-                                chatId,
-                                messageId,
-                                message,
-                                replyMarkup: keyboard
-                            );
+                            _db.OrderInventories.Add(orderInventory);
+                            await _db.SaveChangesAsync();
                         }
 
-                        return Ok();
-                    }
-
-                    if (data.StartsWith("sizes_"))
-                    {
-                        var inventoryId = int.Parse(data.Replace("sizes_", ""));
-
-                        var sizes = await _db.InventoryItems
-                            .Where(x => x.InventoryId == inventoryId)
-                            .Include(x => x.InventoryStatus)
-                            .ToListAsync();
-
-                        if (sizes.Any())
-                        {
-                            var sizesTextBuilder = new System.Text.StringBuilder();
-
-                            sizesTextBuilder.Append("📏 Размеры:\n\n");
-
-                            foreach (var s in sizes)
-                            {
-                                string statusIcon;
-                                if (s.InventoryStatus.InventoryStatusName.Contains("В наличии", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    statusIcon = "✅";
-                                }
-                                else
-                                {
-                                    statusIcon = "❌";
-                                }
-
-                                sizesTextBuilder.AppendLine($"{statusIcon} Размер: {s.Size} — {s.InventoryStatus.InventoryStatusName}");
-                            }
-
-                            var keyboard = new InlineKeyboardMarkup(new[]
-                            {
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"inv_{inventoryId}")
-                            },
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
-                            }
-                        });
-
-                            await _botClient.EditMessageText(
-                                chatId,
-                                messageId,
-                                sizesTextBuilder.ToString(),
-                                replyMarkup: keyboard
-                            );
-                        }
-                        else
-                        {
-                            var keyboard = new InlineKeyboardMarkup(new[]
-                            {
-                            new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"inv_{inventoryId}") },
-                            new[] { InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start") }
-                        });
-
-                            await _botClient.EditMessageText(
-                                chatId,
-                                messageId,
-                                "📏 Размеры: \n\nВ данный момент информация о размерах отсутствует.",
-                                replyMarkup: keyboard
-                            );
-                        }
+                        await _botClient.SendMessage(chatId, "✅ Инвентарь успешно забронирован!");
 
                         return Ok();
                     }
 
                     if (data.StartsWith("srv_"))
                     {
-                        var serviceId = int.Parse(data.Replace("srv_", ""));
-                        var service = await _db.Services.FindAsync(serviceId);
-
-                        if (service != null)
+                        if (!_authorizedUsers.ContainsKey(chatId))
                         {
-                            var icon = GetIcon(service.ServiceName);
-
-                            var message =
-                                $"{icon} {service.ServiceName}\n\n" +
-                                $"💰 Цена: {service.CostPerHour} ₽ / час";
-
-                            var keyboard = new InlineKeyboardMarkup(new[]
-                            {
-                                new[]
-                                {
-                                    InlineKeyboardButton.WithCallbackData("⬅️ Назад к услугам", "back_services"),
-                                    InlineKeyboardButton.WithCallbackData("🏠 Назад к главному меню", "back_to_start")
-                                }
-                            });
-
-
-                            await _botClient.EditMessageText(
-                                chatId,
-                                messageId,
-                                message,
-                                replyMarkup: keyboard
-                            );
+                            await _botClient.SendMessage(chatId, "Сначала авторизуйтесь.");
+                            return Ok();
                         }
+
+                        var serviceId = int.Parse(data.Replace("srv_", ""));
+                        var clientId = _authorizedUsers[chatId];
+
+                        var order = new Order
+                        {
+                            ClientId = clientId,
+                            DateCreate = DateOnly.FromDateTime(DateTime.Now),
+                            TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
+                            TotalPrice = 0
+                        };
+
+                        _db.Orders.Add(order);
+                        await _db.SaveChangesAsync();
+
+                        var orderService = new OrderService
+                        {
+                            OrderId = order.OrderId,
+                            ServiceId = serviceId,
+                            RentTime = 1,
+                            OrderStatusId = 1
+                        };
+
+                        _db.OrderServices.Add(orderService);
+                        await _db.SaveChangesAsync();
+
+                        await _botClient.SendMessage(chatId, "✅ Услуга успешно забронирована!");
 
                         return Ok();
                     }
                 }
 
-                if (update?.Message?.Text != null)
-                {
-                    var chatIdMessage = update.Message.Chat.Id;
-                    var text = update.Message.Text;
-
-                    if (text == "/start")
-                    {
-                        var keyboard = new InlineKeyboardMarkup(new[]
-                        {
-                        new[]
-                        {
-                           InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
-                        },
-                        new[]
-                        {
-                            InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
-                        }
-                    });
-
-                        await _botClient.SendMessage(
-                            chatIdMessage,
-                            "🏔 Добро пожаловать в сервис услуг и инвентаря горнолыжного курорта!",
-                            replyMarkup: keyboard
-                        );
-                    }
-                }
+                    return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Telegram processing error");
+                Console.WriteLine(ex);
+                return Ok();
             }
-
-            return Ok();
         }
-
     }
 }
