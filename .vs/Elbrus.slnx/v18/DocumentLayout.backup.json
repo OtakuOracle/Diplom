@@ -21,9 +21,13 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 310,
+          "DockedWidth": 280,
           "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -34,12 +38,7 @@
               "RelativeToolTip": "Elbrus\\AddEditInventory.axaml.cs",
               "ViewState": "AgIAAHwBAAAAAAAAAAAqwJoBAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-23T12:05:18.318Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+              "WhenOpened": "2026-05-23T12:05:18.318Z"
             },
             {
               "$type": "Document",
@@ -47,9 +46,9 @@
               "Title": "MessagesController.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeDocumentMoniker": "TgBot\\Controllers\\MessagesController.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs*",
-              "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs*",
-              "ViewState": "AgIAAN8BAAAAAAAAAAAkwAYCAAAZAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
+              "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs",
+              "ViewState": "AgIAAFIBAAAAAAAAAAAAAH8BAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-20T12:31:43.544Z",
               "EditorCaption": ""
@@ -64,13 +63,12 @@
               "RelativeToolTip": "Elbrus\\CreateOrder.axaml.cs",
               "ViewState": "AgIAANoAAAAAAAAAAAAxwOwAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-20T11:14:00.15Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-20T11:14:00.15Z"
             }
           ]
         },
         {
-          "DockedWidth": 85,
+          "DockedWidth": 115,
           "SelectedChildIndex": -1,
           "Children": [
             {
