@@ -289,60 +289,81 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
-
                     if (data.StartsWith("inv_"))
                     {
-                        if (!_authorizedUsers.ContainsKey(chatId))
-                        {
-                            await _botClient.SendMessage(chatId, "Сначала авторизуйтесь.");
-                            return Ok();
-                        }
+                        // Формат: inv_{invId}_{orderServiceId}
+                        var parts = data.Split('_');
+                        var invId = int.Parse(parts[1]);
+                        var osId = int.Parse(parts[2]);
 
-                        var inventoryId = int.Parse(data.Replace("inv_", ""));
-                        var clientId = _authorizedUsers[chatId];
+                        var sizes = await _db.InventoryItems
+                            .Where(x => x.InventoryId == invId && x.InventoryStatusId == 1)
+                            .Select(x => x.Size).Distinct().ToListAsync();
 
-                        var order = new Order
-                        {
-                            ClientId = clientId,
-                            DateCreate = DateOnly.FromDateTime(DateTime.Now),
-                            TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
-                            TotalPrice = 0
-                        };
+                        var buttons = sizes.Select(s =>
+                            InlineKeyboardButton.WithCallbackData(s, $"size_{invId}_{s}_{osId}")
+                        ).Chunk(3).Select(x => x.ToArray()).ToList();
 
-                        _db.Orders.Add(order);
-                        await _db.SaveChangesAsync();
+                        await _botClient.EditMessageText(chatId, messageId, "Выберите размер:",
+                            replyMarkup: new InlineKeyboardMarkup(buttons));
+                        return Ok();
+                    }
 
-                        var orderService = new OrderService
-                        {
-                            OrderId = order.OrderId,
-                            ServiceId = null,
-                            RentTime = 1,
-                            OrderStatusId = 1
-                        };
 
-                        _db.OrderServices.Add(orderService);
-                        await _db.SaveChangesAsync();
+
+
+                    if (data.StartsWith("size_"))
+                    {
+                        // Формат: size_{invId}_{size}_{osId}
+                        var parts = data.Split('_');
+                        var invId = int.Parse(parts[1]);
+                        var size = parts[2];
+                        var osId = int.Parse(parts[3]);
 
                         var item = await _db.InventoryItems
-                            .FirstOrDefaultAsync(x => x.InventoryId == inventoryId);
+                            .FirstOrDefaultAsync(x => x.InventoryId == invId && x.Size == size && x.InventoryStatusId == 1);
 
                         if (item != null)
                         {
-                            var orderInventory = new OrderInventory
+                            var orderInv = new OrderInventory
                             {
                                 InventoryItemId = item.InventoryItemId,
-                                OrderServiceId = orderService.OrderServiceId,
+                                OrderServiceId = osId,
                                 RentTime = 1
                             };
-
-                            _db.OrderInventories.Add(orderInventory);
+                            _db.OrderInventories.Add(orderInv);
+                            item.InventoryStatusId = 2; // Бронируем предмет
                             await _db.SaveChangesAsync();
                         }
 
-                        await _botClient.SendMessage(chatId, "✅ Инвентарь успешно забронирован!");
+                        var orderService = await _db.OrderServices.FindAsync(osId);
+                        var keyboard = new InlineKeyboardMarkup(new[] {
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Еще инвентарь", $"add_inv_to_{osId}") },
+        new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить", $"checkout_{orderService.OrderId}") }
+    });
 
+                        await _botClient.SendMessage(chatId, "Добавлено! Что-нибудь еще?", replyMarkup: keyboard);
                         return Ok();
                     }
+
+
+
+                    if (data.StartsWith("add_inv_to_"))
+                    {
+                        var orderServiceId = int.Parse(data.Replace("add_inv_to_", ""));
+                        var inventories = await _db.Inventories.ToListAsync();
+
+                        var buttons = inventories.Select(i =>
+                            new[] { InlineKeyboardButton.WithCallbackData(i.InventoryName, $"inv_{i.InventoryId}_{orderServiceId}") }
+                        ).ToList();
+
+                        await _botClient.EditMessageText(chatId, messageId, "Выберите категорию инвентаря:",
+                            replyMarkup: new InlineKeyboardMarkup(buttons));
+                        return Ok();
+                    }
+
+
+
                     if (data.StartsWith("srv_"))
                     {
                         var serviceId = int.Parse(data.Replace("srv_", ""));
@@ -410,7 +431,8 @@ namespace TgBot.Controllers
                     }
                     if (data.StartsWith("date_"))
                     {
-                        var date = DateOnly.Parse(data.Replace("date_", ""));
+                        // Безопасный парсинг даты формата yyyy-MM-dd
+                        var date = DateOnly.ParseExact(data.Replace("date_", ""), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                         _tempDate[chatId] = date;
 
                         var times = Enumerable.Range(9, 12); // 09:00 - 20:00
@@ -418,7 +440,7 @@ namespace TgBot.Controllers
                         var buttons = times
                             .Select(h => InlineKeyboardButton.WithCallbackData(
                                 $"{h}:00",
-                                $"timein_{h}"
+                                $"timein_{h}" // Передаем час начала
                             ))
                             .Select(x => new[] { x })
                             .ToList();
@@ -432,6 +454,8 @@ namespace TgBot.Controllers
 
                         return Ok();
                     }
+
+
                     if (data.StartsWith("timein_"))
                     {
                         var hour = int.Parse(data.Replace("timein_", ""));
@@ -480,7 +504,7 @@ namespace TgBot.Controllers
                             ClientId = clientId,
                             DateCreate = DateOnly.FromDateTime(DateTime.Now),
                             TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
-                            TotalPrice = 0
+                            TotalPrice = 0 // Посчитаем в самом конце в checkout_
                         };
 
                         _db.Orders.Add(order);
@@ -500,14 +524,85 @@ namespace TgBot.Controllers
                         _db.OrderServices.Add(orderService);
                         await _db.SaveChangesAsync();
 
+                        // Очищаем временные данные, они нам больше не нужны
                         _tempService.Remove(chatId);
                         _tempDate.Remove(chatId);
                         _tempTimeIn.Remove(chatId);
 
-                        await _botClient.SendMessage(chatId, "✅ Бронирование успешно создано!");
+                        // --- ИНТЕГРАЦИЯ С КОРЗИНОЙ: ВМЕСТО ПРОСТОГО СООБЩЕНИЯ ДЕЛАЕМ КНОПКИ ---
+
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                     new[]
+                     { 
+                         // Кнопка ведет на выбор инвентаря для ЭТОЙ конкретной услуги
+                         InlineKeyboardButton.WithCallbackData("🎿 Добавить инвентарь", $"add_inv_to_{orderService.OrderServiceId}")
+                     },
+                     new[]
+                     { 
+                         // Кнопка ведет на оформление заказа, если инвентарь не нужен
+                         InlineKeyboardButton.WithCallbackData("✅ Оформить без инвентаря", $"checkout_{order.OrderId}")
+                     }
+                 });
+
+                        // Редактируем сообщение с выбором времени, чтобы не спамить новыми сообщениями
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            $"Услуга выбрана!\n📅 Дата: {date:dd.MM}\n⏰ Время: {timeIn:HH:mm} - {timeOut:HH:mm} ({rentHours} ч.)\n\nЖелаете подобрать снаряжение?",
+                            replyMarkup: keyboard
+                        );
 
                         return Ok();
                     }
+
+
+
+                    if (data.StartsWith("checkout_"))
+                    {
+                        var orderId = int.Parse(data.Replace("checkout_", ""));
+                        var order = await _db.Orders
+                            .Include(o => o.OrderServices).ThenInclude(os => os.Service)
+                            .Include(o => o.OrderServices).ThenInclude(os => os.OrderInventories)
+                                .ThenInclude(oi => oi.InventoryItem).ThenInclude(ii => ii.Inventory)
+                            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+                        if (order == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Заказ не найден.");
+                            return Ok();
+                        }
+
+                        int total = 0;
+                        string details = "🛒 Ваш заказ:\n";
+
+                        foreach (var os in order.OrderServices)
+                        {
+                            // Добавили (os.RentTime ?? 1) — если RentTime равен null, берем 1 час
+                            int sPrice = (os.Service?.CostPerHour ?? 0) * (os.RentTime ?? 1);
+                            total += sPrice;
+                            details += $"\n🔹 Услуга: {os.Service?.ServiceName} — {sPrice}₽";
+
+                            foreach (var oi in os.OrderInventories)
+                            {
+                                // Добавили безопасный вызов ?. и (oi.RentTime ?? 1)
+                                int iPrice = (oi.InventoryItem?.Inventory?.RentalCostPerHour ?? 0) * (oi.RentTime ?? 1);
+                                total += iPrice;
+                                details += $"\n  🔸 {oi.InventoryItem?.Inventory?.InventoryName} ({oi.InventoryItem?.Size}) — {iPrice}₽";
+                            }
+                        }
+
+                        order.TotalPrice = total;
+                        await _db.SaveChangesAsync();
+
+                        // Добавили экранирование для разметки Telegram (если вы используете Markdown)
+                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого: {total} ₽**\n\nПриходите к нам в выбранное время!");
+                        return Ok();
+                    }
+
+
+
+
 
                 }
             }
