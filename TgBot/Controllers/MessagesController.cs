@@ -22,6 +22,9 @@ namespace TgBot.Controllers
         private static Dictionary<long, DateOnly> _tempDate = new();
         private static Dictionary<long, TimeOnly> _tempTimeIn = new();
 
+        private Dictionary<long, DateOnly> _selectedDates = new();
+
+
         private Dictionary<long, int> _tempOrders = new();
 
 
@@ -261,7 +264,6 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-
                     if (data.StartsWith("date_"))
                     {
                         if (!_authorizedUsers.TryGetValue(chatId, out var clientId))
@@ -272,11 +274,14 @@ namespace TgBot.Controllers
 
                         var date = DateOnly.Parse(data.Replace("date_", ""));
 
+                        // ✅ сохраняем дату
+                        _selectedDates[chatId] = date;
+
+                        // ✅ создаём заказ (без времени пока)
                         var order = new Order
                         {
                             ClientId = clientId,
-                            DateCreate = DateOnly.FromDateTime(DateTime.Now),
-                            TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
+                            DateCreate = date,
                             TotalPrice = 0
                         };
 
@@ -311,16 +316,23 @@ namespace TgBot.Controllers
 
 
 
+
                     if (data.StartsWith("timein_"))
                     {
-                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
+                        // ✅ проверка даты
+                        if (!_selectedDates.TryGetValue(chatId, out var selectedDate))
                         {
                             await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
                             return Ok();
                         }
 
-                        var hour = int.Parse(data.Replace("timein_", ""));
+                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
+                        {
+                            await _botClient.SendMessage(chatId, "❗️ Заказ не найден.");
+                            return Ok();
+                        }
 
+                        var hour = int.Parse(data.Replace("timein_", ""));
                         var os = await _db.OrderServices.FirstOrDefaultAsync(x => x.OrderId == orderId);
 
                         if (os == null)
@@ -353,22 +365,27 @@ namespace TgBot.Controllers
 
                     // return Ok(); // Эта строка была не на своем месте, удалена
 
-
                     if (data.StartsWith("timeout_"))
                     {
+                        // ✅ проверка даты
+                        if (!_selectedDates.TryGetValue(chatId, out var selectedDate))
+                        {
+                            await _botClient.SendMessage(chatId, "⚠️ Сначала выберите дату.");
+                            return Ok();
+                        }
+
                         if (!_tempOrders.TryGetValue(chatId, out var orderId))
                         {
-                            await _botClient.SendMessage(chatId, "⚠️ Сессия истекла. Начните заново с выбора даты.");
+                            await _botClient.SendMessage(chatId, "⚠️ Сессия истекла. Начните заново.");
                             return Ok();
                         }
 
                         var hour = int.Parse(data.Replace("timeout_", ""));
-
                         var os = await _db.OrderServices.FirstOrDefaultAsync(x => x.OrderId == orderId);
 
                         if (os == null)
                         {
-                            await _botClient.SendMessage(chatId, "⚠️ Не удалось продолжить бронирование. Выберите дату заново.");
+                            await _botClient.SendMessage(chatId, "⚠️ Не удалось продолжить бронирование.");
                             return Ok();
                         }
 
@@ -378,7 +395,7 @@ namespace TgBot.Controllers
                         {
                             if (os.TimeOut <= os.TimeIn)
                             {
-                                await _botClient.SendMessage(chatId, "❗️Время окончания должно быть позже времени начала");
+                                await _botClient.SendMessage(chatId, "❗️ Время окончания должно быть позже времени начала");
                                 return Ok();
                             }
 
@@ -391,12 +408,13 @@ namespace TgBot.Controllers
 
                         await _db.SaveChangesAsync();
 
+                        // ✅ очищаем дату (всё, этап завершён)
+                        _selectedDates.Remove(chatId);
+
                         await SendInventory(chatId);
 
                         return Ok();
                     }
-
-
 
 
 
@@ -483,20 +501,24 @@ namespace TgBot.Controllers
 
                         if (os == null)
                         {
-                            await _botClient.SendMessage(chatId, "⚠️ Ошибка бронирования.");
-                            return Ok();
+                            os = new OrderService
+                            {
+                                OrderId = orderId
+                            };
+
+                            _db.OrderServices.Add(os);
                         }
 
-                        // ✅ сохраняем выбранную услугу
+                        // ✅ сохраняем услугу
                         os.ServiceId = serviceId;
 
                         await _db.SaveChangesAsync();
 
-                        // ✅ ПЕРЕХОД К ИНВЕНТАРЮ
                         await SendInventory(chatId);
 
                         return Ok();
                     }
+
 
 
 
@@ -616,12 +638,26 @@ namespace TgBot.Controllers
                         if (item == null)
                             return Ok();
 
+                        // ✅ берём ПОСЛЕДНИЙ OrderService (а не случайный)
                         var orderService = await _db.OrderServices
+                            .OrderByDescending(x => x.OrderServiceId)
                             .FirstOrDefaultAsync(x => x.OrderId == orderId);
 
-                        if (orderService == null)
+                        // ✅ проверка, что время выбрано
+                        if (orderService == null || orderService.RentTime <= 0)
                         {
                             await _botClient.SendMessage(chatId, "❗️ Сначала выберите время.");
+                            return Ok();
+                        }
+
+                        // ✅ защита от дублей
+                        var exists = await _db.OrderInventories.AnyAsync(x =>
+                            x.OrderServiceId == orderService.OrderServiceId &&
+                            x.InventoryItemId == item.InventoryItemId);
+
+                        if (exists)
+                        {
+                            await _botClient.SendMessage(chatId, "⚠️ Этот предмет уже добавлен.");
                             return Ok();
                         }
 
@@ -666,24 +702,10 @@ namespace TgBot.Controllers
                             return Ok();
                         }
 
-                        // ✅ если заказа нет — создаём
                         if (!_tempOrders.TryGetValue(chatId, out var orderId))
                         {
-                            var newOrder = new Order
-                            {
-                                ClientId = clientId,
-                                DateCreate = DateOnly.FromDateTime(DateTime.Now),
-                                TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
-                                TotalPrice = 0
-
-
-                            };
-
-                            _db.Orders.Add(newOrder);
-                            await _db.SaveChangesAsync();
-
-                            orderId = newOrder.OrderId;
-                            _tempOrders[chatId] = orderId;
+                            await _botClient.SendMessage(chatId, "❗️ Начните с выбора даты.");
+                            return Ok();
                         }
 
                         var orderServices = await _db.OrderServices
@@ -704,14 +726,20 @@ namespace TgBot.Controllers
 
                         foreach (var os in orderServices)
                         {
-                            if (os.ServiceId == null)
+                            if (os.Service == null)
                             {
                                 await _botClient.SendMessage(chatId, "❗️ Сначала выберите услугу.");
                                 return Ok();
                             }
 
-                            int rentTime = os.RentTime ?? 0;
-                            int servicePrice = os.Service?.CostPerHour ?? 0;
+                            if (os.RentTime == null || os.RentTime <= 0)
+                            {
+                                await _botClient.SendMessage(chatId, "❗️ Некорректное время аренды.");
+                                return Ok();
+                            }
+
+                            int rentTime = os.RentTime.Value;
+                            int servicePrice = os.Service.CostPerHour ?? 0;
 
                             total += servicePrice * rentTime;
 
