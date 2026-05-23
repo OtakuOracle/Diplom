@@ -7,16 +7,16 @@
       "RelativeMoniker": "D:0:0:{213F3F75-3FEB-48FB-B1F7-6E9B24BB7E48}|TgBot\\TgBot.csproj|solutionrelative:tgbot\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\createorder.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\createorder.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\models\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\models\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\addeditinventory.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\addeditinventory.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|c:\\users\\admin\\desktop\\diplom\\elbrus\\createorder.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F77D61BA-35A3-4366-FD0D-3EEAE63F6CB5}|Elbrus\\Elbrus.csproj|solutionrelative:elbrus\\createorder.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -25,7 +25,7 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 171,
+          "DockedWidth": 198,
           "SelectedChildIndex": 3,
           "Children": [
             {
@@ -34,7 +34,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "OrderService.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Models\\OrderService.cs",
               "RelativeDocumentMoniker": "Elbrus\\Models\\OrderService.cs",
@@ -42,12 +42,11 @@
               "RelativeToolTip": "Elbrus\\Models\\OrderService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-23T16:28:57.204Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-23T16:28:57.204Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "AddEditInventory.axaml.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\AddEditInventory.axaml.cs",
               "RelativeDocumentMoniker": "Elbrus\\AddEditInventory.axaml.cs",
@@ -65,27 +64,28 @@
               "RelativeDocumentMoniker": "TgBot\\Controllers\\MessagesController.cs",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAOwBAAAAAAAAAAAUwAUCAABNAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-20T12:31:43.544Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "CreateOrder.axaml.cs",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\CreateOrder.axaml.cs",
               "RelativeDocumentMoniker": "Elbrus\\CreateOrder.axaml.cs",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\CreateOrder.axaml.cs",
               "RelativeToolTip": "Elbrus\\CreateOrder.axaml.cs",
-              "ViewState": "AgIAANoAAAAAAAAAAAAxwOwAAABBAAAAAAAAAA==",
+              "ViewState": "AgIAANsAAAAAAAAAAAAAAO4AAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-20T11:14:00.15Z"
+              "WhenOpened": "2026-05-20T11:14:00.15Z",
+              "EditorCaption": ""
             }
           ]
         },
         {
-          "DockedWidth": 224,
+          "DockedWidth": 197,
           "SelectedChildIndex": -1,
           "Children": [
             {

@@ -311,7 +311,6 @@ namespace TgBot.Controllers
 
 
 
-
                     if (data.StartsWith("size_"))
                     {
                         // Формат: size_{invId}_{size}_{osId}
@@ -320,6 +319,18 @@ namespace TgBot.Controllers
                         var size = parts[2];
                         var osId = int.Parse(parts[3]);
 
+                        // 1. НАХОДИМ УСЛУГУ, чтобы узнать её время бронирования
+                        var orderService = await _db.OrderServices.FindAsync(osId);
+                        if (orderService == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Произошла ошибка: услуга не найдена.");
+                            return Ok();
+                        }
+
+                        // Берем время из услуги (если там null, по умолчанию берем 1 час)
+                        int serviceRentTime = orderService.RentTime ?? 1;
+
+                        // 2. Находим свободный предмет нужного размера
                         var item = await _db.InventoryItems
                             .FirstOrDefaultAsync(x => x.InventoryId == invId && x.Size == size && x.InventoryStatusId == 1);
 
@@ -329,23 +340,23 @@ namespace TgBot.Controllers
                             {
                                 InventoryItemId = item.InventoryItemId,
                                 OrderServiceId = osId,
-                                RentTime = 1
+                                RentTime = serviceRentTime // <-- ПРИСВАИВАЕМ ВРЕМЯ ИЗ УСЛУГИ!
                             };
                             _db.OrderInventories.Add(orderInv);
-                            item.InventoryStatusId = 2; // Бронируем предмет
+
+                            item.InventoryStatusId = 2; // Меняем статус предмета на "Занят"
                             await _db.SaveChangesAsync();
                         }
 
-                        var orderService = await _db.OrderServices.FindAsync(osId);
+                        // 3. Предлагаем пользователю выбор дальнейших действий
                         var keyboard = new InlineKeyboardMarkup(new[] {
         new[] { InlineKeyboardButton.WithCallbackData("➕ Еще инвентарь", $"add_inv_to_{osId}") },
         new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить", $"checkout_{orderService.OrderId}") }
     });
 
-                        await _botClient.SendMessage(chatId, "Добавлено! Что-нибудь еще?", replyMarkup: keyboard);
+                        await _botClient.SendMessage(chatId, $"Добавлено! Инвентарь забронирован на {serviceRentTime} ч. Что-нибудь еще?", replyMarkup: keyboard);
                         return Ok();
                     }
-
 
 
                     if (data.StartsWith("add_inv_to_"))
@@ -501,6 +512,7 @@ namespace TgBot.Controllers
 
                         var order = new Order
                         {
+                            OrderCode = Random.Shared.Next(100, 999).ToString(),
                             ClientId = clientId,
                             DateCreate = DateOnly.FromDateTime(DateTime.Now),
                             TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
