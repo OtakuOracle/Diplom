@@ -315,7 +315,11 @@ namespace TgBot.Controllers
                         }
 
                         var hour = int.Parse(data.Replace("timein_", ""));
-                        var orderId = _tempOrders[chatId];
+                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
+                        {
+                            await _botClient.SendMessage(chatId, "❗️ Заказ не найден. Начните заново.");
+                            return Ok();
+                        }
 
                         var os = await _db.OrderServices.FirstOrDefaultAsync(x => x.OrderId == orderId);
 
@@ -349,16 +353,15 @@ namespace TgBot.Controllers
                     // return Ok(); // Эта строка была не на своем месте, удалена
 
 
-                    // Этот блок if (data.StartsWith("timeout_")) должен быть внутри if (update.CallbackQuery != null)
                     if (data.StartsWith("timeout_"))
                     {
-                        if (!_tempOrders.ContainsKey(chatId))
+                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
                         {
                             await _botClient.SendMessage(chatId, "❗️ Заказ не найден. Начните заново.");
                             return Ok();
                         }
+
                         var hour = int.Parse(data.Replace("timeout_", ""));
-                        var orderId = _tempOrders[chatId];
 
                         var os = await _db.OrderServices.FirstOrDefaultAsync(x => x.OrderId == orderId);
 
@@ -368,30 +371,29 @@ namespace TgBot.Controllers
                             return Ok();
                         }
 
-                        os.TimeOut = new TimeOnly(hour, 0); // Сохраняем время окончания
-                                                            // Теперь нужно рассчитать RentTime (продолжительность)
+                        os.TimeOut = new TimeOnly(hour, 0);
+
                         if (os.TimeIn.HasValue && os.TimeOut.HasValue)
                         {
-                            os.RentTime = (int)(os.TimeOut.Value.ToTimeSpan() - os.TimeIn.Value.ToTimeSpan()).TotalHours; // Рассчитываем продолжительность в часах
-                            if (os.RentTime < 0) // Если время окончания раньше времени начала, сбросим
+                            os.RentTime = (int)(os.TimeOut.Value.ToTimeSpan() - os.TimeIn.Value.ToTimeSpan()).TotalHours;
+
+                            if (os.RentTime < 0)
                             {
                                 os.RentTime = 0;
                             }
                         }
                         else
                         {
-                            os.RentTime = 0; // Если время начала не установлено, продолжительность 0
+                            os.RentTime = 0;
                         }
-
 
                         await _db.SaveChangesAsync();
 
-                        // После выбора времени и расчета продолжительности, переходим к выбору инвентаря
                         await SendInventory(chatId);
-                        // Исправлено: нужно SendInventory, который редактирует сообщение
-                        return Ok();
 
+                        return Ok();
                     }
+
 
 
 
@@ -579,7 +581,11 @@ namespace TgBot.Controllers
                     if (data.StartsWith("service_"))
                     {
                         var serviceId = int.Parse(data.Replace("service_", ""));
-                        var orderId = _tempOrders[chatId];
+                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
+                        {
+                            await _botClient.SendMessage(chatId, "❗️ Заказ не найден. Начните заново.");
+                            return Ok();
+                        }
 
                         var orderService = await _db.OrderServices
                             .FirstOrDefaultAsync(x => x.OrderId == orderId && x.ServiceId == null);
@@ -610,7 +616,11 @@ namespace TgBot.Controllers
 
                     if (data == "checkout")
                     {
-                        var orderId = _tempOrders[chatId];
+                        if (!_tempOrders.TryGetValue(chatId, out var orderId))
+                        {
+                            await _botClient.SendMessage(chatId, "❗️ Заказ не найден. Начните заново.");
+                            return Ok();
+                        }
 
                         var orderServices = await _db.OrderServices
                             .Include(x => x.OrderInventories)
