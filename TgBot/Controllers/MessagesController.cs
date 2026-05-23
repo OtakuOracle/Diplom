@@ -276,7 +276,6 @@ namespace TgBot.Controllers
 
                         _selectedDates[chatId] = date;
 
-                        // ✅ если заказ уже есть — используем его
                         if (!_tempOrders.TryGetValue(chatId, out var orderId))
                         {
                             var order = new Order
@@ -294,7 +293,6 @@ namespace TgBot.Controllers
                             _tempOrders[chatId] = orderId;
                         }
 
-                        // ✅ создаём или обновляем OrderService
                         var orderService = await _db.OrderServices
                             .OrderByDescending(x => x.OrderServiceId)
                             .FirstOrDefaultAsync(x => x.OrderId == orderId);
@@ -304,16 +302,14 @@ namespace TgBot.Controllers
                             orderService = new OrderService
                             {
                                 OrderId = orderId,
-                                Date = date,
                                 OrderStatusId = 1
                             };
 
                             _db.OrderServices.Add(orderService);
                         }
-                        else
-                        {
-                            orderService.Date = date; // ✅ обновляем дату
-                        }
+
+                        // ✅ ВАЖНО — используем ТВОЁ поле
+                        orderService.Date = date;
 
                         await _db.SaveChangesAsync();
 
