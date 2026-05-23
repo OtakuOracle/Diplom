@@ -162,14 +162,16 @@ namespace TgBot.Controllers
 
                                 var keyboard = new InlineKeyboardMarkup(new[]
                                 {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь","open_inventory")
-                    },
+
                     new[]
                     {
                         InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги","open_services")
                     }
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь","open_inventory")
+                    },
+                   
                 });
 
                                 await _botClient.SendMessage(
@@ -200,14 +202,16 @@ namespace TgBot.Controllers
                     {
                         var keyboard = new InlineKeyboardMarkup(new[]
                         {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
-                    },
+
                     new[]
                     {
                         InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
                     },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("🎿 Инвентарь", "open_inventory")
+                    },
+                   
                     new[]
                     {
                         InlineKeyboardButton.WithCallbackData("🔑 Войти", "login")
