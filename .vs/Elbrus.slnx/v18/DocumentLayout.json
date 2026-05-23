@@ -25,9 +25,13 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 297,
+          "DockedWidth": 260,
           "SelectedChildIndex": 3,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -36,14 +40,10 @@
               "RelativeDocumentMoniker": "Elbrus\\Models\\OrderService.cs",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\Elbrus\\Models\\OrderService.cs",
               "RelativeToolTip": "Elbrus\\Models\\OrderService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAqAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-23T16:28:57.204Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             },
             {
               "$type": "Document",
@@ -65,7 +65,7 @@
               "RelativeDocumentMoniker": "TgBot\\Controllers\\MessagesController.cs",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Diplom\\TgBot\\Controllers\\MessagesController.cs",
               "RelativeToolTip": "TgBot\\Controllers\\MessagesController.cs",
-              "ViewState": "AgIAAF0BAAAAAAAAAAAAAH8BAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAEYBAAAAAAAAAAAtwG4BAABKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-20T12:31:43.544Z",
               "EditorCaption": ""
@@ -85,7 +85,7 @@
           ]
         },
         {
-          "DockedWidth": 98,
+          "DockedWidth": 135,
           "SelectedChildIndex": -1,
           "Children": [
             {

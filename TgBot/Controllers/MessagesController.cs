@@ -125,12 +125,24 @@ namespace TgBot.Controllers
         [Consumes("application/json")]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
+            long chatId = 0;
+
+            if (update.CallbackQuery != null)
+            {
+                chatId = update.CallbackQuery.Message.Chat.Id;
+            }
+            else if (update.Message != null)
+            {
+                chatId = update.Message.Chat.Id;
+            }
+
+
+
             try
             {
 
                 if (update.Message != null && update.Message.Text != null)
                 {
-                    var chatId = update.Message.Chat.Id; // chatId корректно определяется
                     var text = update.Message.Text;
 
                     if (text == "/start")
@@ -200,7 +212,6 @@ namespace TgBot.Controllers
 
                 if (update.CallbackQuery != null)
                 {
-                    var chatId = update.CallbackQuery.Message.Chat.Id; // chatId корректно определяется
                     var messageId = update.CallbackQuery.Message.MessageId; // messageId корректно определяется
                     var data = update.CallbackQuery.Data; // data корректно определяется
 
@@ -343,9 +354,31 @@ namespace TgBot.Controllers
                         // ✅ 1. Пытаемся взять дату
                         if (!_selectedDates.TryGetValue(chatId, out var selectedDate))
                         {
-                            await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
-                            return Ok();
+                            // fallback — пробуем взять дату из БД по последнему OrderService этого заказа
+                            if (_tempOrders.TryGetValue(chatId, out var tmpOrderId))
+                            {
+                                var osDate = await _db.OrderServices
+                                    .OrderByDescending(x => x.OrderServiceId)
+                                    .FirstOrDefaultAsync(x => x.OrderId == tmpOrderId);
+
+                                if (osDate?.Date != null)
+                                {
+                                    selectedDate = osDate.Date.Value;
+                                    _selectedDates[chatId] = selectedDate;
+                                }
+                                else
+                                {
+                                    await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
+                                    return Ok();
+                                }
+                            }
+                            else
+                            {
+                                await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
+                                return Ok();
+                            }
                         }
+
 
                         // ✅ 2. Пытаемся взять заказ из словаря
                         if (!_tempOrders.TryGetValue(chatId, out var orderId))
@@ -418,9 +451,31 @@ namespace TgBot.Controllers
                         // ✅ дата (не критично, но оставим)
                         if (!_selectedDates.TryGetValue(chatId, out var selectedDate))
                         {
-                            await _botClient.SendMessage(chatId, "⚠️ Сначала выберите дату.");
-                            return Ok();
+                            // fallback — пробуем взять дату из БД по последнему OrderService этого заказа
+                            if (_tempOrders.TryGetValue(chatId, out var tmpOrderId))
+                            {
+                                var osDate = await _db.OrderServices
+                                    .OrderByDescending(x => x.OrderServiceId)
+                                    .FirstOrDefaultAsync(x => x.OrderId == tmpOrderId);
+
+                                if (osDate?.Date != null)
+                                {
+                                    selectedDate = osDate.Date.Value;
+                                    _selectedDates[chatId] = selectedDate;
+                                }
+                                else
+                                {
+                                    await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
+                                    return Ok();
+                                }
+                            }
+                            else
+                            {
+                                await _botClient.SendMessage(chatId, "❗️ Сначала выберите дату.");
+                                return Ok();
+                            }
                         }
+
 
                         // ✅ заказ (с fallback)
                         if (!_tempOrders.TryGetValue(chatId, out var orderId))
