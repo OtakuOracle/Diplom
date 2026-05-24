@@ -472,15 +472,16 @@ namespace TgBot.Controllers
                         var buttons = items
                             .Select(x => InlineKeyboardButton.WithCallbackData(
                                 x.InventoryName,
-                                $"inv_{x.InventoryId}"
+                                // Передаем "inv_{id}_none", чтобы показать, что это просто просмотр без заказа
+                                $"inv_{x.InventoryId}_none"
                             ))
                             .Select(x => new[] { x })
                             .ToList();
 
                         buttons.Add(new[]
                         {
-                    InlineKeyboardButton.WithCallbackData("⬅️ Назад", "back_to_start")
-                });
+        InlineKeyboardButton.WithCallbackData("⬅️ Назад", "back_to_start")
+    });
 
                         var keyboard = new InlineKeyboardMarkup(buttons);
 
@@ -494,27 +495,52 @@ namespace TgBot.Controllers
                         return Ok();
                     }
 
-                   
                     if (data.StartsWith("inv_"))
                     {
-                        // Формат: inv_{invId}_{orderServiceId}
+                        // Формат: inv_{invId}_{orderServiceId} (или inv_{invId}_none)
                         var parts = data.Split('_');
                         var invId = int.Parse(parts[1]);
-                        var osId = int.Parse(parts[2]);
+                        var osIdStr = parts[2]; // Это может быть ID услуги или строка "none"
 
-                        var sizes = await _db.InventoryItems
-                            .Where(x => x.InventoryId == invId && x.InventoryStatusId == 1)
-                            .Select(x => x.Size).Distinct().ToListAsync();
+                        var inventory = await _db.Inventories.FindAsync(invId);
+                        if (inventory == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Инвентарь не найден.");
+                            return Ok();
+                        }
 
-                        var buttons = sizes.Select(s =>
-                            InlineKeyboardButton.WithCallbackData(s, $"size_{invId}_{s}_{osId}")
-                        ).Chunk(3).Select(x => x.ToArray()).ToList();
+                        // Собираем красивое описание инвентаря
+                        var message =
+                            $"🎿 **{inventory.InventoryName}**\n" +
+                            $"🏷️ Модель: {inventory.InventoryModel ?? "Не указана"}\n" +
+                            $"💰 Цена: {inventory.RentalCostPerHour ?? 0} ₽ / час";
 
-                        await _botClient.EditMessageText(chatId, messageId, "Выберите размер:",
-                            replyMarkup: new InlineKeyboardMarkup(buttons));
+                        var buttons = new List<InlineKeyboardButton[]>();
+
+                        // Если мы зашли сюда из корзины (есть ID услуги)
+                        if (osIdStr != "none")
+                        {
+                            buttons.Add(new[]
+                            { 
+            // Кнопка ведет на следующий шаг — выбор размера
+            InlineKeyboardButton.WithCallbackData("📏 Выбрать размер", $"selectsize_{invId}_{osIdStr}")
+        });
+                            buttons.Add(new[]
+                            {
+            InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"add_inv_to_{osIdStr}")
+        });
+                        }
+                        else // Если просто просматриваем из главного меню
+                        {
+                            buttons.Add(new[]
+                            {
+            InlineKeyboardButton.WithCallbackData("⬅️ Назад", "open_inventory")
+        });
+                        }
+
+                        await _botClient.EditMessageText(chatId, messageId, message, replyMarkup: new InlineKeyboardMarkup(buttons));
                         return Ok();
                     }
-
 
 
                     if (data.StartsWith("size_"))
@@ -571,17 +597,18 @@ namespace TgBot.Controllers
                         var inventories = await _db.Inventories.ToListAsync();
 
                         var buttons = inventories.Select(i =>
+                            // Передаем inv_{inventoryId}_{orderServiceId}
                             new[] { InlineKeyboardButton.WithCallbackData(i.InventoryName, $"inv_{i.InventoryId}_{orderServiceId}") }
                         ).ToList();
 
-                        await _botClient.EditMessageText(chatId, messageId, "Выберите инвентарь:",
+                        await _botClient.EditMessageText(chatId, messageId, "Выберите категорию инвентаря:",
                             replyMarkup: new InlineKeyboardMarkup(buttons));
                         return Ok();
                     }
 
 
 
-                 
+
 
 
                     if (data.StartsWith("checkout_"))
