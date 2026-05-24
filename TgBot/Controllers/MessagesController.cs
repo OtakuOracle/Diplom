@@ -87,7 +87,7 @@ namespace TgBot.Controllers
             await _botClient.EditMessageText(
                 chatId,
                 messageId,
-                "🧑🏫 Выберите услугу:",
+                "🏫 Выберите услугу:",
                 replyMarkup: keyboard
             );
         }
@@ -167,7 +167,7 @@ namespace TgBot.Controllers
 
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги","open_services")
+                        InlineKeyboardButton.WithCallbackData("🏫 Услуги","open_services")
                     },
                     new[]
                     {
@@ -207,7 +207,7 @@ namespace TgBot.Controllers
 
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("🧑🏫 Услуги", "open_services")
+                        InlineKeyboardButton.WithCallbackData("🏫 Услуги", "open_services")
                     },
                     new[]
                     {
@@ -261,7 +261,7 @@ namespace TgBot.Controllers
                         await _botClient.EditMessageText(
                             chatId,
                             messageId,
-                            "🧑🏫 Выберите услугу:",
+                            "🏫 Выберите услугу:",
                             replyMarkup: keyboard
                         );
 
@@ -638,7 +638,6 @@ namespace TgBot.Controllers
                             replyMarkup: new InlineKeyboardMarkup(buttons));
                         return Ok();
                     }
-
                     if (data.StartsWith("checkout_"))
                     {
                         var orderId = int.Parse(data.Replace("checkout_", ""));
@@ -659,27 +658,33 @@ namespace TgBot.Controllers
 
                         foreach (var os in order.OrderServices)
                         {
-                            // Добавили (os.RentTime ?? 1) — если RentTime равен null, берем 1 час
-                            int sPrice = (os.Service?.CostPerHour ?? 0) * (os.RentTime ?? 1);
+                            // Записываем время аренды услуги в переменную (если null, то 1 час)
+                            int sRentTime = os.RentTime ?? 1;
+                            int sPrice = (os.Service?.CostPerHour ?? 0) * sRentTime;
                             total += sPrice;
-                            details += $"\n🔹 Услуга: {os.Service?.ServiceName} — {sPrice}₽";
+
+                            // Добавлено время аренды в скобках: (X ч.)
+                            details += $"\n🔹 Услуга: {os.Service?.ServiceName} — {sPrice}₽ ({sRentTime} ч.)";
 
                             foreach (var oi in os.OrderInventories)
                             {
-                                // Добавили безопасный вызов ?. и (oi.RentTime ?? 1)
-                                int iPrice = (oi.InventoryItem?.Inventory?.RentalCostPerHour ?? 0) * (oi.RentTime ?? 1);
+                                // Записываем время аренды инвентаря в переменную (если null, то 1 час)
+                                int iRentTime = oi.RentTime ?? 1;
+                                int iPrice = (oi.InventoryItem?.Inventory?.RentalCostPerHour ?? 0) * iRentTime;
                                 total += iPrice;
-                                details += $"\n  🔸 {oi.InventoryItem?.Inventory?.InventoryName} ({oi.InventoryItem?.Size}) — {iPrice}₽";
+
+                                // Добавлено время аренды в скобках: (X ч.)
+                                details += $"\n🔸 Инвентарь: {oi.InventoryItem?.Inventory?.InventoryName} ({oi.InventoryItem?.Size}) — {iPrice}₽ ({iRentTime} ч.)";
                             }
                         }
 
                         order.TotalPrice = total;
                         await _db.SaveChangesAsync();
 
-                        // Добавили экранирование для разметки Telegram (если вы используете Markdown)
                         await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого: {total} ₽**");
                         return Ok();
                     }
+
 
 
 
