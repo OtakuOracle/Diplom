@@ -739,7 +739,7 @@ namespace TgBot.Controllers
                             .Include(o => o.OrderServices).ThenInclude(os => os.Service)
                             .Include(o => o.OrderServices).ThenInclude(os => os.OrderInventories)
                                 .ThenInclude(oi => oi.InventoryItem).ThenInclude(ii => ii.Inventory)
-                            .FirstOrDefaultAsync(o => o.OrderId == orderService.OrderId);
+                                 .FirstOrDefaultAsync(o => o.OrderId == orderService.OrderId);
 
                         int total = 0;
                         string details = "🛒 **Ваша корзина на данный момент:**\n";
@@ -770,14 +770,172 @@ namespace TgBot.Controllers
                         var keyboard = new InlineKeyboardMarkup(new[]
                         {
                             new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще инвентарь", $"add_inv_to_{osId}") },
-                            new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще услугу", "open_services") },
+                            // !!! ИЗМЕНЕНО: Передаем osId в выбор услуг, чтобы наследовать время !!!
+                            new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще услугу", $"open_services_for_{osId}") },
                             new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить оформление", $"checkout_{orderService.OrderId}") }
                         });
 
                         // Отправляем промежуточный чек сразу после нажатия на размер
-                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Промежуточное итого: {total} ₽**", replyMarkup: keyboard);
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            $"{details}\n\n💰 **Промежуточное итого: {total} ₽**",
+                            replyMarkup: keyboard
+                        );
+
                         return Ok();
                     }
+
+
+
+                    if (data.StartsWith("open_services_for_"))
+                    {
+                        var osId = int.Parse(data.Replace("open_services_for_", ""));
+                        var services = await _db.Services.ToListAsync();
+
+                        var buttons = services
+                            .Select(x => InlineKeyboardButton.WithCallbackData(
+                                x.ServiceName,
+                                $"srvadd_{x.ServiceId}_{osId}" // Уникальный префикс srvadd_ во избежание конфликтов
+                            ))
+                            .Select(x => new[] { x })
+                            .ToList();
+
+                        buttons.Add(new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("⬅️ Назад к корзине", $"checkout_{_activeOrderId[chatId]}")
+                        });
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            "🎿 **Выберите услугу, которую хотите добавить на это же время:**",
+                            replyMarkup: new InlineKeyboardMarkup(buttons)
+                        );
+
+                        return Ok();
+                    }
+
+                    // 2. Карточка услуги с кнопкой моментального добавления
+                    if (data.StartsWith("srvadd_"))
+                    {
+                        // Формат: srvadd_{serviceId}_{osId}
+                        var parts = data.Split('_');
+                        var serviceId = int.Parse(parts[1]);
+                        var osId = int.Parse(parts[2]);
+
+                        var service = await _db.Services.FindAsync(serviceId);
+                        if (service == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Услуга не найдена.");
+                            return Ok();
+                        }
+
+                        var icon = GetIcon(service.ServiceName);
+                        var message =
+                            $"{icon} {service.ServiceName}\n\n" +
+                            $"💰 Цена: {service.CostPerHour} ₽ / час\n\n" +
+                            $"⚠️ *Услуга будет забронирована на то же время, что и ваш инвентарь.*";
+
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                            new[] { InlineKeyboardButton.WithCallbackData("✅ Добавить в этот заказ", $"attach_srv_{serviceId}_{osId}") },
+                            new[] { InlineKeyboardButton.WithCallbackData("⬅️ Назад", $"open_services_for_{osId}") }
+                        });
+
+                        await _botClient.EditMessageText(chatId, messageId, message, replyMarkup: keyboard);
+                        return Ok();
+                    }
+
+                    // 3. Привязка услуги к времени инвентаря и вывод обновленной корзины
+                    if (data.StartsWith("attach_srv_"))
+                    {
+                        // Формат: attach_srv_{serviceId}_{osId}
+                        var parts = data.Replace("attach_srv_", "").Split('_');
+                        var serviceId = int.Parse(parts[0]);
+                        var osId = int.Parse(parts[1]);
+
+                        var orderService = await _db.OrderServices.FindAsync(osId);
+                        if (orderService == null)
+                        {
+                            await _botClient.SendMessage(chatId, "Запись времени не найдена.");
+                            return Ok();
+                        }
+
+                        // Если у этой записи еще нет услуги (т.е. мы шли по пути "сначала инвентарь")
+                        if (orderService.ServiceId == null)
+                        {
+                            orderService.ServiceId = serviceId; // Просто привязываем услугу к этому времени
+                        }
+                        else
+                        {
+                            // Если вдруг услуга уже была, создаем вторую услугу на то же время
+                            var newOrderService = new OrderService
+                            {
+                                OrderId = orderService.OrderId,
+                                ServiceId = serviceId,
+                                Date = orderService.Date,
+                                TimeIn = orderService.TimeIn,
+                                TimeOut = orderService.TimeOut,
+                                RentTime = orderService.RentTime,
+                                OrderStatusId = 1
+                            };
+                            _db.OrderServices.Add(newOrderService);
+                            osId = newOrderService.OrderServiceId; // Переключаем контекст на новую услугу
+                        }
+
+                        await _db.SaveChangesAsync();
+
+                        // Пересчитываем корзину и выводим её пользователю
+                        var order = await _db.Orders
+                            .Include(o => o.OrderServices).ThenInclude(os => os.Service)
+                            .Include(o => o.OrderServices).ThenInclude(os => os.OrderInventories)
+                                .ThenInclude(oi => oi.InventoryItem).ThenInclude(ii => ii.Inventory)
+                            .FirstOrDefaultAsync(o => o.OrderId == orderService.OrderId);
+
+                        int total = 0;
+                        string details = "🛒 **Ваша корзина обновлена:**\n";
+
+                        foreach (var os in order.OrderServices)
+                        {
+                            if (os.Service != null)
+                            {
+                                int sPrice = (os.Service.CostPerHour ?? 0) * (os.RentTime ?? 1);
+                                total += sPrice;
+                                details += $"\n🔹 Услуга: {os.Service.ServiceName} — {sPrice}₽ ({os.RentTime} ч.)";
+                            }
+
+                            foreach (var oi in os.OrderInventories)
+                            {
+                                int iPrice = (oi.InventoryItem?.Inventory?.RentalCostPerHour ?? 0) * (oi.RentTime ?? 1);
+                                total += iPrice;
+                                details += $"\n🔸 Инвентарь: {oi.InventoryItem?.Inventory?.InventoryName} ({oi.InventoryItem?.Size}) — {iPrice}₽ ({oi.RentTime} ч.)";
+                            }
+                        }
+
+                        order.TotalPrice = total;
+                        await _db.SaveChangesAsync();
+
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                            new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще инвентарь", $"add_inv_to_{osId}") },
+                            new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще услугу", $"open_services_for_{osId}") },
+                            new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить оформление", $"checkout_{order.OrderId}") }
+                        });
+
+                        await _botClient.EditMessageText(
+                            chatId,
+                            messageId,
+                            $"{details}\n\n💰 **Промежуточное итого: {total} ₽**",
+                            replyMarkup: keyboard
+                        );
+
+                        return Ok();
+                    }
+
+
+
+
 
 
                     if (data.StartsWith("add_inv_to_"))
@@ -812,7 +970,7 @@ namespace TgBot.Controllers
                         }
 
                         int total = 0;
-                        string details = $"🛒 **Ваш подтвержденный заказ №{order.OrderCode}**\n";
+                        string details = $"🛒 **Ваш заказ №{order.OrderId}**\n";
 
                         foreach (var os in order.OrderServices)
                         {
@@ -841,7 +999,7 @@ namespace TgBot.Controllers
                         order.TotalPrice = total;
                         await _db.SaveChangesAsync();
 
-                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого к оплате: {total} ₽**\n\nСпасибо за заказ! Будем ждать вас!");
+                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого к оплате: {total} ₽**");
 
                         // Очищаем корзину для следующего сеанса бронирования
                         _activeOrderId.Remove(chatId);
