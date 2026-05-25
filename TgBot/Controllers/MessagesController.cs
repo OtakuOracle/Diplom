@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Avalonia.Controls;
+using Elbrus.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using Elbrus.Models;
 
 namespace TgBot.Controllers
 {
@@ -20,6 +21,8 @@ namespace TgBot.Controllers
         private static Dictionary<long, int> _tempService = new();
         private static Dictionary<long, DateOnly> _tempDate = new();
         private static Dictionary<long, TimeOnly> _tempTimeIn = new();
+        private static Dictionary<long, int> _activeOrderId = new(); // Хранит ID открытой корзины для каждого пользователя
+
 
 
 
@@ -404,21 +407,36 @@ namespace TgBot.Controllers
 
                         var rentHours = timeOut.Hour - timeIn.Hour;
 
-                        var order = new Order
+                        int orderId;
+
+                        // ПРОВЕРЯЕМ: Есть ли уже открытая корзина (заказ) у этого пользователя?
+                        if (_activeOrderId.TryGetValue(chatId, out var existingOrderId))
                         {
-                            OrderCode = Random.Shared.Next(100, 999).ToString(),
-                            ClientId = clientId,
-                            DateCreate = DateOnly.FromDateTime(DateTime.Now),
-                            TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
-                            TotalPrice = 0 // Посчитаем в самом конце в checkout_
-                        };
+                            orderId = existingOrderId; // Используем существующий заказ
+                        }
+                        else
+                        {
+                            // Если корзины нет — создаем новый заказ с рандомным кодом
+                            var order = new Order
+                            {
+                                OrderCode = Random.Shared.Next(100, 1000).ToString(),
+                                ClientId = clientId,
+                                DateCreate = DateOnly.FromDateTime(DateTime.Now),
+                                TimeCreate = TimeOnly.FromDateTime(DateTime.Now),
+                                TotalPrice = 0
+                            };
 
-                        _db.Orders.Add(order);
-                        await _db.SaveChangesAsync();
+                            _db.Orders.Add(order);
+                            await _db.SaveChangesAsync();
 
+                            orderId = order.OrderId;
+                            _activeOrderId[chatId] = orderId; // Запоминаем этот заказ как активную корзину
+                        }
+
+                        // Создаем запись о новой услуге и привязываем её к найденному orderId
                         var orderService = new OrderService
                         {
-                            OrderId = order.OrderId,
+                            OrderId = orderId,
                             ServiceId = serviceId,
                             RentTime = rentHours,
                             OrderStatusId = 1,
@@ -430,37 +448,29 @@ namespace TgBot.Controllers
                         _db.OrderServices.Add(orderService);
                         await _db.SaveChangesAsync();
 
-                        // Очищаем временные данные, они нам больше не нужны
+                        // Очищаем временные данные бронирования текущей услуги
                         _tempService.Remove(chatId);
                         _tempDate.Remove(chatId);
                         _tempTimeIn.Remove(chatId);
 
-                        // --- ИНТЕГРАЦИЯ С КОРЗИНОЙ: ВМЕСТО ПРОСТОГО СООБЩЕНИЯ ДЕЛАЕМ КНОПКИ ---
-
+                        // Новые кнопки управления корзиной
                         var keyboard = new InlineKeyboardMarkup(new[]
                         {
-                     new[]
-                     { 
-                         // Кнопка ведет на выбор инвентаря для ЭТОЙ конкретной услуги
-                         InlineKeyboardButton.WithCallbackData("🎿 Добавить инвентарь", $"add_inv_to_{orderService.OrderServiceId}")
-                     },
-                     new[]
-                     { 
-                         // Кнопка ведет на оформление заказа, если инвентарь не нужен
-                         InlineKeyboardButton.WithCallbackData("✅ Оформить без инвентаря", $"checkout_{order.OrderId}")
-                     }
-                 });
+        new[] { InlineKeyboardButton.WithCallbackData("🎿 Добавить инвентарь", $"add_inv_to_{orderService.OrderServiceId}") },
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще услугу", "open_services") }, // Ведет на список услуг
+        new[] { InlineKeyboardButton.WithCallbackData("🏁 Оформить весь заказ", $"checkout_{orderId}") }
+    });
 
-                        // Редактируем сообщение с выбором времени, чтобы не спамить новыми сообщениями
                         await _botClient.EditMessageText(
                             chatId,
                             messageId,
-                            $"Услуга выбрана!\n📅 Дата: {date:dd.MM}\n⏰ Время: {timeIn:HH:mm} - {timeOut:HH:mm} ({rentHours} ч.)",
+                            $"Услуга успешно добавлена в корзину!\n📅 Дата: {date:dd.MM}\n⏰ Время: {timeIn:HH:mm} - {timeOut:HH:mm} ({rentHours} ч.)\n\nЧто вы хотите сделать дальше?",
                             replyMarkup: keyboard
                         );
 
                         return Ok();
                     }
+
 
 
 
@@ -614,10 +624,14 @@ namespace TgBot.Controllers
                         }
 
                         // 3. Предлагаем пользователю выбор дальнейших действий
-                        var keyboard = new InlineKeyboardMarkup(new[] {
-        new[] { InlineKeyboardButton.WithCallbackData("➕ Еще инвентарь", $"add_inv_to_{osId}") },
+                        // Кнопки для продолжения
+                        var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Еще инвентарь к этой услуге", $"add_inv_to_{osId}") },
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить другую услугу", "open_services") }, // Добавили кнопку перехода к услугам
         new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить", $"checkout_{orderService.OrderId}") }
     });
+
 
                         await _botClient.SendMessage(chatId, $"Добавлено! Инвентарь забронирован на {serviceRentTime} ч.", replyMarkup: keyboard);
                         return Ok();
