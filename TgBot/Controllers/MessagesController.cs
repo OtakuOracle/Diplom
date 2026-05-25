@@ -627,8 +627,8 @@ namespace TgBot.Controllers
                         // Кнопки для продолжения
                         var keyboard = new InlineKeyboardMarkup(new[]
                         {
-        new[] { InlineKeyboardButton.WithCallbackData("➕ Еще инвентарь к этой услуге", $"add_inv_to_{osId}") },
-        new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить другую услугу", "open_services") }, // Добавили кнопку перехода к услугам
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще инвентарь", $"add_inv_to_{osId}") },
+        new[] { InlineKeyboardButton.WithCallbackData("➕ Добавить еще услугу", "open_services") }, // Добавили кнопку перехода к услугам
         new[] { InlineKeyboardButton.WithCallbackData("🏁 Завершить", $"checkout_{orderService.OrderId}") }
     });
 
@@ -652,6 +652,8 @@ namespace TgBot.Controllers
                             replyMarkup: new InlineKeyboardMarkup(buttons));
                         return Ok();
                     }
+
+
                     if (data.StartsWith("checkout_"))
                     {
                         var orderId = int.Parse(data.Replace("checkout_", ""));
@@ -668,26 +670,23 @@ namespace TgBot.Controllers
                         }
 
                         int total = 0;
-                        string details = "🛒 Ваш заказ:\n";
+                        // Добавили номер заказа в заголовок
+                        string details = $"🛒 **Ваш заказ №{order.OrderCode}**\n";
 
                         foreach (var os in order.OrderServices)
                         {
-                            // Записываем время аренды услуги в переменную (если null, то 1 час)
                             int sRentTime = os.RentTime ?? 1;
                             int sPrice = (os.Service?.CostPerHour ?? 0) * sRentTime;
                             total += sPrice;
 
-                            // Добавлено время аренды в скобках: (X ч.)
                             details += $"\n🔹 Услуга: {os.Service?.ServiceName} — {sPrice}₽ ({sRentTime} ч.)";
 
                             foreach (var oi in os.OrderInventories)
                             {
-                                // Записываем время аренды инвентаря в переменную (если null, то 1 час)
                                 int iRentTime = oi.RentTime ?? 1;
                                 int iPrice = (oi.InventoryItem?.Inventory?.RentalCostPerHour ?? 0) * iRentTime;
                                 total += iPrice;
 
-                                // Добавлено время аренды в скобках: (X ч.)
                                 details += $"\n🔸 Инвентарь: {oi.InventoryItem?.Inventory?.InventoryName} ({oi.InventoryItem?.Size}) — {iPrice}₽ ({iRentTime} ч.)";
                             }
                         }
@@ -695,12 +694,14 @@ namespace TgBot.Controllers
                         order.TotalPrice = total;
                         await _db.SaveChangesAsync();
 
-                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого: {total} ₽**");
+                        // ОТПРАВЛЯЕМ ФИНАЛЬНЫЙ ЧЕК
+                        await _botClient.SendMessage(chatId, $"{details}\n\n💰 **Итого к оплате: {total} ₽**");
+
+                        // !!! САМОЕ ВАЖНОЕ: Очищаем активную корзину пользователя !!!
+                        _activeOrderId.Remove(chatId);
+
                         return Ok();
                     }
-
-
-
 
 
 
